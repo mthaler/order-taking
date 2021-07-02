@@ -1,2 +1,53 @@
 package com.mthaler.ordertaking
 
+typealias Undefined = Nothing
+
+// ===============================
+// Simple types and constrained types related to the OrderTaking domain.
+//
+// E.g. Single case discriminated unions (aka wrappers), enums, etc
+// ===============================
+
+/// Constrained to be 50 chars or less, not null
+data class String50(val value: String)
+
+/// An email address
+data class EmailAddress(val value: String)
+
+/// A zip code
+data class ZipCode(val value: String)
+
+/// An Id for Orders. Constrained to be a non-empty string < 10 chars
+data class OrderId(val value: Int)
+
+/// An Id for OrderLines. Constrained to be a non-empty string < 10 chars
+data class OrderLineId(val value: Int)
+
+/// A ProductCode is either a Widget or a Gizmo
+sealed class ProductCode {
+    /// The codes for Widgets start with a "W" and then four digits
+    data class WidgetCode(val value: String) : ProductCode()
+
+    /// The codes for Gizmos start with a "G" and then three digits.
+    data class GizmoCode(val value: String)  : ProductCode()
+}
+
+sealed class OrderQuantity {
+
+    /// Constrained to be a integer between 1 and 1000
+    data class UnitQuantity(val value: Int) : OrderQuantity()
+
+    /// Constrained to be a decimal between 0.05 and 100.00
+    data class KilogramQuantity(val value: Double) : OrderQuantity()
+}
+
+/// Constrained to be a decimal between 0.0 and 1000.00
+data class Price(val value: Double)
+
+/// Constrained to be a decimal between 0.0 and 10000.00
+data class BillingAmount(val value: Double)
+
+data class PdfAttachment(val name: String, val bytes: ByteArray)
+
+
+
