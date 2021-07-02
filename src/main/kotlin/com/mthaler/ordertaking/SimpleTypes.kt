@@ -1,5 +1,7 @@
 package com.mthaler.ordertaking
 
+import java.math.BigDecimal
+
 typealias Undefined = Nothing
 
 // ===============================
@@ -38,14 +40,14 @@ sealed class OrderQuantity {
     data class UnitQuantity(val value: Int) : OrderQuantity()
 
     /// Constrained to be a decimal between 0.05 and 100.00
-    data class KilogramQuantity(val value: Double) : OrderQuantity()
+    data class KilogramQuantity(val value: BigDecimal) : OrderQuantity()
 }
 
 /// Constrained to be a decimal between 0.0 and 1000.00
-data class Price(val value: Double)
+data class Price(val value: BigDecimal)
 
 /// Constrained to be a decimal between 0.0 and 10000.00
-data class BillingAmount(val value: Double)
+data class BillingAmount(val value: BigDecimal)
 
 data class PdfAttachment(val name: String, val bytes: ByteArray)
 
