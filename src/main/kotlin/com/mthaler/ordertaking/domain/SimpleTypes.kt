@@ -2,6 +2,7 @@ package com.mthaler.ordertaking.domain
 
 import com.mthaler.ordertaking.Option
 import com.mthaler.ordertaking.Result
+import com.mthaler.ordertaking.validation.createLike
 import com.mthaler.ordertaking.validation.createString
 import com.mthaler.ordertaking.validation.createStringOption
 import java.math.BigDecimal
@@ -25,7 +26,12 @@ data class String50 internal constructor(val value: String) {
 }
 
 /// An email address
-data class EmailAddress(val value: String)
+data class EmailAddress internal constructor(val value: String) {
+
+    companion object {
+        operator fun invoke(fieldName: String, str: String): Result<EmailAddress> = createLike(fieldName, ::EmailAddress, ".+@.+", str)
+    }
+}
 
 /// A zip code
 data class ZipCode(val value: String)
