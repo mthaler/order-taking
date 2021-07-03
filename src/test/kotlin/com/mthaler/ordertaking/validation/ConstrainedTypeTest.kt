@@ -15,8 +15,8 @@ class ConstrainedTypeTest: StringSpec({
     }
 
     "createDecimal" {
-        createDecimal("test", ::Price, 2.0.toBigDecimal(), 4.0.toBigDecimal(), 3.0.toBigDecimal()) shouldBe Result.Ok(Price(3.0.toBigDecimal()))
-        createDecimal("test", ::Price, 2.0.toBigDecimal(), 4.0.toBigDecimal(), 1.0.toBigDecimal()) shouldBe Result.Error("test: Must not be less than 2.0")
-        createDecimal("test", ::Price, 2.0.toBigDecimal(), 4.0.toBigDecimal(), 5.0.toBigDecimal()) shouldBe Result.Error("test: Must not be greater than 4.0")
+        createDecimal("test", ::Price, 2.0, 4.0, 3.0) shouldBe Result.Ok(Price(3.0))
+        createDecimal("test", ::Price, 2.0, 4.0, 1.0) shouldBe Result.Error("test: Must not be less than 2.0")
+        createDecimal("test", ::Price, 2.0, 4.0, 5.0) shouldBe Result.Error("test: Must not be greater than 4.0")
     }
 })

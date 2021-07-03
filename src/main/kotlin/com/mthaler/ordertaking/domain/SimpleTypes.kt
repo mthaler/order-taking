@@ -2,9 +2,7 @@ package com.mthaler.ordertaking.domain
 
 import com.mthaler.ordertaking.Option
 import com.mthaler.ordertaking.Result
-import com.mthaler.ordertaking.validation.createLike
-import com.mthaler.ordertaking.validation.createString
-import com.mthaler.ordertaking.validation.createStringOption
+import com.mthaler.ordertaking.validation.*
 import java.math.BigDecimal
 
 typealias Undefined = Nothing
@@ -103,17 +101,40 @@ sealed class ProductCode {
 sealed class OrderQuantity {
 
     /// Constrained to be a integer between 1 and 1000
-    data class UnitQuantity(val value: Int) : OrderQuantity()
+    data class UnitQuantity(val value: Int) : OrderQuantity() {
+
+        companion object {
+            operator fun invoke(fieldName: String, v: Int): Result<UnitQuantity> = createInt(fieldName, ::UnitQuantity, 1, 1000, v)
+        }
+    }
 
     /// Constrained to be a decimal between 0.05 and 100.00
-    data class KilogramQuantity(val value: BigDecimal) : OrderQuantity()
+    data class KilogramQuantity(val value: Double) : OrderQuantity() {
+
+        companion object {
+            operator fun invoke(fieldName: String, v: Double): Result<KilogramQuantity> = createDecimal(fieldName, ::KilogramQuantity, 0.05, 100.0, v)
+        }
+    }
+
+    companion object {
+        operator fun invoke(fieldName: String, productCode: ProductCode, quantity: Number): Result<OrderQuantity> {
+            return when(productCode) {
+                is ProductCode.WidgetCode -> {
+                    UnitQuantity(fieldName, quantity.toInt())
+                }
+                is ProductCode.GizmoCode -> {
+                    KilogramQuantity(fieldName, quantity.toDouble())
+                }
+            }
+        }
+    }
 }
 
 /// Constrained to be a decimal between 0.0 and 1000.00
-data class Price(val value: BigDecimal)
+data class Price(val value: Double)
 
 /// Constrained to be a decimal between 0.0 and 10000.00
-data class BillingAmount(val value: BigDecimal)
+data class BillingAmount(val value: Double)
 
 data class PdfAttachment(val name: String, val bytes: ByteArray)
 

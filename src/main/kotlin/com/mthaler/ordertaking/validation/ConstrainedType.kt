@@ -61,7 +61,7 @@ fun <T>createInt(fieldName: String, ctor: (Int) -> T, minVal: Int,  maxVal: Int,
 
 /// Create a constrained decimal using the constructor provided
 /// Return Error if input is less than minVal or more than maxVal
-fun <T>createDecimal(fieldName: String, ctor: (BigDecimal) -> T, minVal: BigDecimal,  maxVal: BigDecimal, i: BigDecimal): Result<T> {
+fun <T>createDecimal(fieldName: String, ctor: (Double) -> T, minVal: Double,  maxVal: Double, i: Double): Result<T> {
     return when {
         i < minVal -> {
             val msg = "$fieldName: Must not be less than $minVal"
