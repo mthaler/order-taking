@@ -42,7 +42,12 @@ data class ZipCode(val value: String) {
 }
 
 /// An Id for Orders. Constrained to be a non-empty string < 10 chars
-data class OrderId(val value: Int)
+data class OrderId internal constructor(val value: String) {
+
+    companion object {
+        operator fun invoke(fieldName: String, str: String): Result<OrderId> = createString(fieldName, ::OrderId, 50, str)
+    }
+}
 
 /// An Id for OrderLines. Constrained to be a non-empty string < 10 chars
 data class OrderLineId(val value: Int)
