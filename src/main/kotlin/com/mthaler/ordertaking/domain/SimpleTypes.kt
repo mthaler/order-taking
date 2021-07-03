@@ -60,10 +60,39 @@ data class OrderLineId(val value: String) {
 /// A ProductCode is either a Widget or a Gizmo
 sealed class ProductCode {
     /// The codes for Widgets start with a "W" and then four digits
-    data class WidgetCode(val value: String) : ProductCode()
+    data class WidgetCode internal constructor(val value: String) : ProductCode() {
+
+        companion object {
+            // The codes for Widgets start with a "W" and then four digits
+            operator fun invoke(fieldName: String, code: String): Result<WidgetCode> = createLike(fieldName, ::WidgetCode, """W\d{4}""", code)
+        }
+    }
 
     /// The codes for Gizmos start with a "G" and then three digits.
-    data class GizmoCode(val value: String)  : ProductCode()
+    data class GizmoCode internal constructor(val value: String)  : ProductCode() {
+
+        companion object {
+            // The codes for Widgets start with a "W" and then four digits
+            operator fun invoke(fieldName: String, code: String): Result<GizmoCode> = createLike(fieldName, ::GizmoCode, """G\d{3}""", code)
+        }
+    }
+
+    companion object {
+
+        operator fun invoke(fieldName: String, code: String): Result<ProductCode> {
+            if (code.isEmpty()) {
+                val msg = "$fieldName: Must not be empty"
+                return Result.Error(msg)
+            } else if (code.startsWith("W")) {
+                return WidgetCode(fieldName, code)
+            } else if (code.startsWith("G")) {
+                return GizmoCode(fieldName, code)
+            } else {
+                val msg =  "$fieldName: Format not recognized '$code'"
+                return Result.Error(msg)
+            }
+        }
+    }
 }
 
 sealed class OrderQuantity {
