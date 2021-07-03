@@ -7,7 +7,7 @@ import java.math.BigDecimal
 /// Create a constrained string using the constructor provided
 /// Return Error if input is null, empty, or length > maxLen
 fun <T>createString(fieldName: String, ctor: (String) -> T, maxLen: Int, str: String): Result<T> {
-    if (str == null || str.isEmpty()) {
+    if (str.isEmpty()) {
         val msg = "$fieldName must not be null or empty"
         return Result.Error(msg)
     } else if (str.length > maxLen) {
@@ -23,8 +23,7 @@ fun <T>createString(fieldName: String, ctor: (String) -> T, maxLen: Int, str: St
 /// Return error if length > maxLen
 /// Return Some if the input is valid
 fun <T>createStringOption(fieldName: String, ctor: (String) -> T, maxLen: Int, str: String): Result<Option<T>> {
-    if (str == null || str.isEmpty()) {
-        val msg = "$fieldName must not be null or empty"
+    if (str.isEmpty()) {
         return Result.Ok(Option.None)
     } else if (str.length > maxLen) {
         val msg =  "$fieldName must not be more than $maxLen chars"
@@ -59,5 +58,19 @@ fun <T>createDecimal(fieldName: String, ctor: (BigDecimal) -> T, minVal: BigDeci
         return Result.Error(msg)
     } else {
         return Result.Ok(ctor(i))
+    }
+}
+
+/// Create a constrained string using the constructor provided
+/// Return Error if input is null. empty, or does not match the regex pattern
+fun <T>createLike(fieldName: String, ctor: (String) -> T, pattern: String, str: String): Result<T> {
+    if (str.isEmpty()) {
+        val msg = "$fieldName must not be null or empty"
+        return Result.Error(msg)
+    } else if (pattern.toRegex().matches(str)) {
+        return Result.Ok(ctor(str))
+    } else {
+        val msg = "$fieldName: '$str' must match the pattern '$pattern'"
+        return Result.Error(msg)
     }
 }
