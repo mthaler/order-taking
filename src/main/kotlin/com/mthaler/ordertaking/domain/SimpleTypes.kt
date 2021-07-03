@@ -34,7 +34,12 @@ data class EmailAddress internal constructor(val value: String) {
 }
 
 /// A zip code
-data class ZipCode(val value: String)
+data class ZipCode(val value: String) {
+
+    companion object {
+        operator fun invoke(fieldName: String, str: String): Result<ZipCode> = createLike(fieldName, ::ZipCode, """\d{5}""", str)
+    }
+}
 
 /// An Id for Orders. Constrained to be a non-empty string < 10 chars
 data class OrderId(val value: Int)

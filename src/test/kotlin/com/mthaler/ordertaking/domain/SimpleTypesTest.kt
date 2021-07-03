@@ -25,4 +25,10 @@ class SimpleTypesTest: StringSpec({
         EmailAddress("test", "@bar") shouldBe Result.Error("test: '@bar' must match the pattern '.+@.+'")
         EmailAddress("test", "foo@bar") shouldBe Result.Ok(EmailAddress("foo@bar"))
     }
+
+    "createZipCode" {
+        ZipCode("test", "foo") shouldBe Result.Error("test: 'foo' must match the pattern '\\d{5}'")
+        ZipCode("test", "1234") shouldBe Result.Error("test: '1234' must match the pattern '\\d{5}'")
+        ZipCode("test", "12345") shouldBe Result.Ok(ZipCode("12345"))
+    }
 })
