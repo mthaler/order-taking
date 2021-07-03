@@ -1,7 +1,6 @@
 package com.mthaler.ordertaking.validation
 
 import com.mthaler.ordertaking.Result
-import com.mthaler.ordertaking.domain.OrderId
 import com.mthaler.ordertaking.domain.OrderQuantity.UnitQuantity
 import com.mthaler.ordertaking.domain.Price
 import io.kotest.core.spec.style.StringSpec

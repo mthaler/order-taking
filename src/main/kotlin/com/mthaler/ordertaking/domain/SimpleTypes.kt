@@ -80,16 +80,21 @@ sealed class ProductCode {
     companion object {
 
         operator fun invoke(fieldName: String, code: String): Result<ProductCode> {
-            if (code.isEmpty()) {
-                val msg = "$fieldName: Must not be empty"
-                return Result.Error(msg)
-            } else if (code.startsWith("W")) {
-                return WidgetCode(fieldName, code)
-            } else if (code.startsWith("G")) {
-                return GizmoCode(fieldName, code)
-            } else {
-                val msg =  "$fieldName: Format not recognized '$code'"
-                return Result.Error(msg)
+            when {
+                code.isEmpty() -> {
+                    val msg = "$fieldName: Must not be empty"
+                    return Result.Error(msg)
+                }
+                code.startsWith("W") -> {
+                    return WidgetCode(fieldName, code)
+                }
+                code.startsWith("G") -> {
+                    return GizmoCode(fieldName, code)
+                }
+                else -> {
+                    val msg =  "$fieldName: Format not recognized '$code'"
+                    return Result.Error(msg)
+                }
             }
         }
     }
