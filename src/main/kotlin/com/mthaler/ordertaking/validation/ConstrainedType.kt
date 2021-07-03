@@ -2,7 +2,6 @@ package com.mthaler.ordertaking.validation
 
 import com.mthaler.ordertaking.Option
 import com.mthaler.ordertaking.Result
-import java.math.BigDecimal
 
 /// Create a constrained string using the constructor provided
 /// Return Error if input is null, empty, or length > maxLen

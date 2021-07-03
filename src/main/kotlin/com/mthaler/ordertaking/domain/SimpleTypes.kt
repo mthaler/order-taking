@@ -3,7 +3,7 @@ package com.mthaler.ordertaking.domain
 import com.mthaler.ordertaking.Option
 import com.mthaler.ordertaking.Result
 import com.mthaler.ordertaking.validation.*
-import java.math.BigDecimal
+import java.lang.IllegalArgumentException
 
 typealias Undefined = Nothing
 
@@ -101,7 +101,7 @@ sealed class ProductCode {
 sealed class OrderQuantity {
 
     /// Constrained to be a integer between 1 and 1000
-    data class UnitQuantity(val value: Int) : OrderQuantity() {
+    data class UnitQuantity internal constructor(val value: Int) : OrderQuantity() {
 
         companion object {
             operator fun invoke(fieldName: String, v: Int): Result<UnitQuantity> = createInt(fieldName, ::UnitQuantity, 1, 1000, v)
@@ -109,7 +109,7 @@ sealed class OrderQuantity {
     }
 
     /// Constrained to be a decimal between 0.05 and 100.00
-    data class KilogramQuantity(val value: Double) : OrderQuantity() {
+    data class KilogramQuantity internal constructor(val value: Double) : OrderQuantity() {
 
         companion object {
             operator fun invoke(fieldName: String, v: Double): Result<KilogramQuantity> = createDecimal(fieldName, ::KilogramQuantity, 0.05, 100.0, v)
@@ -131,7 +131,22 @@ sealed class OrderQuantity {
 }
 
 /// Constrained to be a decimal between 0.0 and 1000.00
-data class Price(val value: Double)
+data class Price internal constructor(val value: Double) {
+
+    companion object {
+        operator fun invoke(v: Double) = createDecimal("Price", ::Price, 0.0, 1000.0, v)
+
+        fun unsafeCreate(v: Double): Price {
+            val p = invoke(v)
+            return when(p) {
+                is Result.Ok -> p.value
+                is Result.Error -> throw IllegalArgumentException("Not expecting Price to be out of bounds: ${p.value}")
+            }
+        }
+    }
+
+    operator fun times(value: Double): Result<Price> = invoke(this.value * value)
+}
 
 /// Constrained to be a decimal between 0.0 and 10000.00
 data class BillingAmount(val value: Double)
