@@ -15,12 +15,12 @@ typealias Undefined = Nothing
 // ===============================
 
 /// Constrained to be 50 chars or less, not null
-data class String50 private constructor(val value: String) {
+data class String50 internal constructor(val value: String) {
 
     companion object {
         operator fun invoke(fieldName: String, str: String): Result<String50> = createString(fieldName, ::String50, 50, str)
 
-        fun createOptional(fieldName: String, str: String): Result<Option<String50>> = createStringOption(fieldName, ::String50, 50, str)
+        fun createOption(fieldName: String, str: String): Result<Option<String50>> = createStringOption(fieldName, ::String50, 50, str)
     }
 }
 
