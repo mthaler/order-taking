@@ -1,8 +1,8 @@
 package com.mthaler.ordertaking.validation
 
-import com.mthaler.ordertaking.OrderId
-import com.mthaler.ordertaking.Price
 import com.mthaler.ordertaking.Result
+import com.mthaler.ordertaking.domain.OrderId
+import com.mthaler.ordertaking.domain.Price
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
