@@ -134,7 +134,7 @@ sealed class OrderQuantity {
 data class Price internal constructor(val value: Double) {
 
     companion object {
-        operator fun invoke(v: Double) = createDecimal("Price", ::Price, 0.0, 1000.0, v)
+        operator fun invoke(v: Double): Result<Price> = createDecimal("Price", ::Price, 0.0, 1000.0, v)
 
         fun unsafeCreate(v: Double): Price {
             val p = invoke(v)
@@ -149,7 +149,17 @@ data class Price internal constructor(val value: Double) {
 }
 
 /// Constrained to be a decimal between 0.0 and 10000.00
-data class BillingAmount(val value: Double)
+data class BillingAmount internal constructor(val value: Double) {
+
+    companion object {
+        operator fun invoke(v: Double): Result<BillingAmount> = createDecimal("BillingAmount", ::BillingAmount, 0.0, 10000.0, v)
+    }
+}
+
+fun List<Price>.sumPrices(): Result<BillingAmount> {
+    val total = this.map { it.value }.sum()
+    return BillingAmount.invoke(total)
+}
 
 data class PdfAttachment(val name: String, val bytes: ByteArray)
 
