@@ -17,9 +17,9 @@ typealias Undefined = Nothing
 data class String50 internal constructor(val value: String) {
 
     companion object {
-        operator fun invoke(fieldName: String, str: String): Result<String50> = createString(fieldName, ::String50, 50, str)
+        operator fun invoke(fieldName: String, str: String): Result<String50, String> = createString(fieldName, ::String50, 50, str)
 
-        fun createOption(fieldName: String, str: String): Result<Option<String50>> = createStringOption(fieldName, ::String50, 50, str)
+        fun createOption(fieldName: String, str: String): Result<Option<String50>, String> = createStringOption(fieldName, ::String50, 50, str)
     }
 }
 
@@ -27,7 +27,7 @@ data class String50 internal constructor(val value: String) {
 data class EmailAddress internal constructor(val value: String) {
 
     companion object {
-        operator fun invoke(fieldName: String, str: String): Result<EmailAddress> = createLike(fieldName, ::EmailAddress, ".+@.+", str)
+        operator fun invoke(fieldName: String, str: String): Result<EmailAddress, String> = createLike(fieldName, ::EmailAddress, ".+@.+", str)
     }
 }
 
@@ -35,7 +35,7 @@ data class EmailAddress internal constructor(val value: String) {
 data class ZipCode(val value: String) {
 
     companion object {
-        operator fun invoke(fieldName: String, str: String): Result<ZipCode> = createLike(fieldName, ::ZipCode, """\d{5}""", str)
+        operator fun invoke(fieldName: String, str: String): Result<ZipCode, String> = createLike(fieldName, ::ZipCode, """\d{5}""", str)
     }
 }
 
@@ -43,7 +43,7 @@ data class ZipCode(val value: String) {
 data class OrderId internal constructor(val value: String) {
 
     companion object {
-        operator fun invoke(fieldName: String, str: String): Result<OrderId> = createString(fieldName, ::OrderId, 50, str)
+        operator fun invoke(fieldName: String, str: String): Result<OrderId, String> = createString(fieldName, ::OrderId, 50, str)
     }
 }
 
@@ -51,7 +51,7 @@ data class OrderId internal constructor(val value: String) {
 data class OrderLineId(val value: String) {
 
     companion object {
-        operator fun invoke(fieldName: String, str: String): Result<OrderLineId> = createString(fieldName, ::OrderLineId, 50, str)
+        operator fun invoke(fieldName: String, str: String): Result<OrderLineId, String> = createString(fieldName, ::OrderLineId, 50, str)
     }
 }
 
@@ -62,7 +62,7 @@ sealed class ProductCode {
 
         companion object {
             // The codes for Widgets start with a "W" and then four digits
-            operator fun invoke(fieldName: String, code: String): Result<WidgetCode> = createLike(fieldName, ::WidgetCode, """W\d{4}""", code)
+            operator fun invoke(fieldName: String, code: String): Result<WidgetCode, String> = createLike(fieldName, ::WidgetCode, """W\d{4}""", code)
         }
     }
 
@@ -71,13 +71,13 @@ sealed class ProductCode {
 
         companion object {
             // The codes for Widgets start with a "W" and then four digits
-            operator fun invoke(fieldName: String, code: String): Result<GizmoCode> = createLike(fieldName, ::GizmoCode, """G\d{3}""", code)
+            operator fun invoke(fieldName: String, code: String): Result<GizmoCode, String> = createLike(fieldName, ::GizmoCode, """G\d{3}""", code)
         }
     }
 
     companion object {
 
-        operator fun invoke(fieldName: String, code: String): Result<ProductCode> {
+        operator fun invoke(fieldName: String, code: String): Result<ProductCode, String> {
             when {
                 code.isEmpty() -> {
                     val msg = "$fieldName: Must not be empty"
@@ -104,7 +104,7 @@ sealed class OrderQuantity {
     data class UnitQuantity internal constructor(val value: Int) : OrderQuantity() {
 
         companion object {
-            operator fun invoke(fieldName: String, v: Int): Result<UnitQuantity> = createInt(fieldName, ::UnitQuantity, 1, 1000, v)
+            operator fun invoke(fieldName: String, v: Int): Result<UnitQuantity, String> = createInt(fieldName, ::UnitQuantity, 1, 1000, v)
         }
     }
 
@@ -112,12 +112,12 @@ sealed class OrderQuantity {
     data class KilogramQuantity internal constructor(val value: Double) : OrderQuantity() {
 
         companion object {
-            operator fun invoke(fieldName: String, v: Double): Result<KilogramQuantity> = createDecimal(fieldName, ::KilogramQuantity, 0.05, 100.0, v)
+            operator fun invoke(fieldName: String, v: Double): Result<KilogramQuantity, String> = createDecimal(fieldName, ::KilogramQuantity, 0.05, 100.0, v)
         }
     }
 
     companion object {
-        operator fun invoke(fieldName: String, productCode: ProductCode, quantity: Number): Result<OrderQuantity> {
+        operator fun invoke(fieldName: String, productCode: ProductCode, quantity: Number): Result<OrderQuantity, String> {
             return when(productCode) {
                 is ProductCode.WidgetCode -> {
                     UnitQuantity(fieldName, quantity.toInt())
@@ -134,7 +134,7 @@ sealed class OrderQuantity {
 data class Price internal constructor(val value: Double) {
 
     companion object {
-        operator fun invoke(v: Double): Result<Price> = createDecimal("Price", ::Price, 0.0, 1000.0, v)
+        operator fun invoke(v: Double): Result<Price, String> = createDecimal("Price", ::Price, 0.0, 1000.0, v)
 
         fun unsafeCreate(v: Double): Price {
             val p = invoke(v)
@@ -145,18 +145,18 @@ data class Price internal constructor(val value: Double) {
         }
     }
 
-    operator fun times(value: Double): Result<Price> = invoke(this.value * value)
+    operator fun times(value: Double): Result<Price, String> = invoke(this.value * value)
 }
 
 /// Constrained to be a decimal between 0.0 and 10000.00
 data class BillingAmount internal constructor(val value: Double) {
 
     companion object {
-        operator fun invoke(v: Double): Result<BillingAmount> = createDecimal("BillingAmount", ::BillingAmount, 0.0, 10000.0, v)
+        operator fun invoke(v: Double): Result<BillingAmount, String> = createDecimal("BillingAmount", ::BillingAmount, 0.0, 10000.0, v)
     }
 }
 
-fun List<Price>.sumPrices(): Result<BillingAmount> {
+fun List<Price>.sumPrices(): Result<BillingAmount, String> {
     val total = this.map { it.value }.sum()
     return BillingAmount.invoke(total)
 }

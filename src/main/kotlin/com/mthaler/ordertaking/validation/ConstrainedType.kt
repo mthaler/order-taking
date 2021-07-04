@@ -5,7 +5,7 @@ import com.mthaler.ordertaking.Result
 
 /// Create a constrained string using the constructor provided
 /// Return Error if input is null, empty, or length > maxLen
-fun <T>createString(fieldName: String, ctor: (String) -> T, maxLen: Int, str: String): Result<T> {
+fun <T>createString(fieldName: String, ctor: (String) -> T, maxLen: Int, str: String): Result<T, String> {
     return when {
         str.isEmpty() -> {
             val msg = "$fieldName must not be empty"
@@ -25,7 +25,7 @@ fun <T>createString(fieldName: String, ctor: (String) -> T, maxLen: Int, str: St
 /// Return None if input is null, empty.
 /// Return error if length > maxLen
 /// Return Some if the input is valid
-fun <T>createStringOption(fieldName: String, ctor: (String) -> T, maxLen: Int, str: String): Result<Option<T>> {
+fun <T>createStringOption(fieldName: String, ctor: (String) -> T, maxLen: Int, str: String): Result<Option<T>, String> {
     return when {
         str.isEmpty() -> {
             Result.Ok(Option.None)
@@ -42,7 +42,7 @@ fun <T>createStringOption(fieldName: String, ctor: (String) -> T, maxLen: Int, s
 
 /// Create a constrained integer using the constructor provided
 /// Return Error if input is less than minVal or more than maxVal
-fun <T>createInt(fieldName: String, ctor: (Int) -> T, minVal: Int,  maxVal: Int, i: Int): Result<T> {
+fun <T>createInt(fieldName: String, ctor: (Int) -> T, minVal: Int,  maxVal: Int, i: Int): Result<T, String> {
     return when {
         i < minVal -> {
             val msg = "$fieldName: Must not be less than $minVal"
@@ -60,7 +60,7 @@ fun <T>createInt(fieldName: String, ctor: (Int) -> T, minVal: Int,  maxVal: Int,
 
 /// Create a constrained decimal using the constructor provided
 /// Return Error if input is less than minVal or more than maxVal
-fun <T>createDecimal(fieldName: String, ctor: (Double) -> T, minVal: Double,  maxVal: Double, i: Double): Result<T> {
+fun <T>createDecimal(fieldName: String, ctor: (Double) -> T, minVal: Double,  maxVal: Double, i: Double): Result<T, String> {
     return when {
         i < minVal -> {
             val msg = "$fieldName: Must not be less than $minVal"
@@ -78,7 +78,7 @@ fun <T>createDecimal(fieldName: String, ctor: (Double) -> T, minVal: Double,  ma
 
 /// Create a constrained string using the constructor provided
 /// Return Error if input is null. empty, or does not match the regex pattern
-fun <T>createLike(fieldName: String, ctor: (String) -> T, pattern: String, str: String): Result<T> {
+fun <T>createLike(fieldName: String, ctor: (String) -> T, pattern: String, str: String): Result<T, String> {
     return when {
         str.isEmpty() -> {
             val msg = "$fieldName must not be null or empty"
