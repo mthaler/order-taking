@@ -1,7 +1,9 @@
 package com.mthaler.ordertaking.validation
 
+import arrow.core.None
+import arrow.core.Option
+import arrow.core.Some
 import arrow.core.Validated
-import com.mthaler.ordertaking.Option
 import com.mthaler.ordertaking.Result
 
 /// Create a constrained string using the constructor provided
@@ -29,14 +31,14 @@ fun <T>createString(fieldName: String, ctor: (String) -> T, maxLen: Int, str: St
 fun <T>createStringOption(fieldName: String, ctor: (String) -> T, maxLen: Int, str: String): Result<Option<T>, String> {
     return when {
         str.isEmpty() -> {
-            Result.Ok(Option.None)
+            Result.Ok(None)
         }
         str.length > maxLen -> {
             val msg =  "$fieldName must not be more than $maxLen chars"
             Result.Error(msg)
         }
         else -> {
-            Result.Ok(Option.Some(ctor(str)))
+            Result.Ok(Some(ctor(str)))
         }
     }
 }

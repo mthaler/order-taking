@@ -1,7 +1,7 @@
 package com.mthaler.ordertaking.domain
 
+import arrow.core.Option
 import arrow.core.Validated
-import com.mthaler.ordertaking.Option
 import com.mthaler.ordertaking.Result
 import com.mthaler.ordertaking.validation.*
 import java.lang.IllegalArgumentException

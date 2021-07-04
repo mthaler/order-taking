@@ -1,6 +1,7 @@
 package com.mthaler.ordertaking.domain
 
-import com.mthaler.ordertaking.Option
+import arrow.core.None
+import arrow.core.Some
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import com.mthaler.ordertaking.Result
@@ -14,8 +15,8 @@ class SimpleTypesTest: StringSpec({
     }
 
     "createOptionString50" {
-        String50.createOption("test", "") shouldBe Result.Ok(Option.None)
-        String50.createOption("test", "blah") shouldBe Result.Ok(Option.Some(String50("blah")))
+        String50.createOption("test", "") shouldBe Result.Ok(None)
+        String50.createOption("test", "blah") shouldBe Result.Ok(Some(String50("blah")))
         String50.createOption("test", "a".repeat(60)) shouldBe Result.Error("test must not be more than 50 chars")
     }
 
