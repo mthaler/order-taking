@@ -1,22 +1,23 @@
 package com.mthaler.ordertaking.validation
 
+import arrow.core.Validated
 import com.mthaler.ordertaking.Option
 import com.mthaler.ordertaking.Result
 
 /// Create a constrained string using the constructor provided
 /// Return Error if input is null, empty, or length > maxLen
-fun <T>createString(fieldName: String, ctor: (String) -> T, maxLen: Int, str: String): Result<T, String> {
+fun <T>createString(fieldName: String, ctor: (String) -> T, maxLen: Int, str: String): Validated<String, T> {
     return when {
         str.isEmpty() -> {
             val msg = "$fieldName must not be empty"
-            Result.Error(msg)
+            Validated.Invalid(msg)
         }
         str.length > maxLen -> {
             val msg =  "$fieldName must not be more than $maxLen chars"
-            Result.Error(msg)
+            Validated.Invalid(msg)
         }
         else -> {
-            Result.Ok(ctor(str))
+            Validated.Valid(ctor(str))
         }
     }
 }

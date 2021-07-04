@@ -1,5 +1,6 @@
 package com.mthaler.ordertaking.domain
 
+import arrow.core.Validated
 import com.mthaler.ordertaking.Option
 import com.mthaler.ordertaking.Result
 import com.mthaler.ordertaking.validation.*
@@ -17,7 +18,7 @@ typealias Undefined = Nothing
 data class String50 internal constructor(val value: String) {
 
     companion object {
-        operator fun invoke(fieldName: String, str: String): Result<String50, String> = createString(fieldName, ::String50, 50, str)
+        operator fun invoke(fieldName: String, str: String): Validated<String, String50> = createString(fieldName, ::String50, 50, str)
 
         fun createOption(fieldName: String, str: String): Result<Option<String50>, String> = createStringOption(fieldName, ::String50, 50, str)
     }
@@ -43,7 +44,7 @@ data class ZipCode(val value: String) {
 data class OrderId internal constructor(val value: String) {
 
     companion object {
-        operator fun invoke(fieldName: String, str: String): Result<OrderId, String> = createString(fieldName, ::OrderId, 50, str)
+        operator fun invoke(fieldName: String, str: String): Validated<String, OrderId> = createString(fieldName, ::OrderId, 50, str)
     }
 }
 
@@ -51,7 +52,7 @@ data class OrderId internal constructor(val value: String) {
 data class OrderLineId(val value: String) {
 
     companion object {
-        operator fun invoke(fieldName: String, str: String): Result<OrderLineId, String> = createString(fieldName, ::OrderLineId, 50, str)
+        operator fun invoke(fieldName: String, str: String): Validated<String, OrderLineId> = createString(fieldName, ::OrderLineId, 50, str)
     }
 }
 
