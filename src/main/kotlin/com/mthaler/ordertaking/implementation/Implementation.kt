@@ -1,10 +1,7 @@
 package com.mthaler.ordertaking.implementation
 
 import arrow.core.*
-import com.mthaler.ordertaking.common.UnvalidatedAddress
-import com.mthaler.ordertaking.common.UnvalidatedCustomerInfo
-import com.mthaler.ordertaking.common.UnvalidatedOrderLine
-import com.mthaler.ordertaking.common.ValidationError
+import com.mthaler.ordertaking.common.*
 import com.mthaler.ordertaking.domain.*
 import com.mthaler.ordertaking.utils.flatMap
 
@@ -31,6 +28,11 @@ fun interface CheckAddressExists {
 data class ValidatedOrderLine(val orderLineId: OrderLineId, val productCode: ProductCode,val quantity: OrderQuantity)
 
 data class ValidatedOrder(val orderId: OrderId, val customerInfo: CustomerInfo, val shippingAddress: Address, val billingAddress: Address, val lines: List<ValidatedOrderLine>)
+
+fun interface ValidateOrder {
+
+    suspend fun validateOrder(checkProductCodeExists: CheckProductCodeExists, checkAddressExists: CheckAddressExists, unvalidatedOrder: UnvalidatedOrder): ValidatedNel<ValidationError, ValidatedOrder>
+}
 
 // ---------------------------
 // Pricing step
@@ -124,3 +126,44 @@ fun toValidatedOrderLine(checkProductCodeExists: CheckProductCodeExists, unvalid
         ValidatedOrderLine(o, p, q)
     }
 }
+
+suspend fun validateOrder(): ValidateOrder {
+    return object : ValidateOrder {
+        override suspend fun validateOrder(
+            checkProductCodeExists: CheckProductCodeExists,
+            checkAddressExists: CheckAddressExists,
+            unvalidatedOrder: UnvalidatedOrder
+        ): ValidatedNel<ValidationError, ValidatedOrder> {
+            val orderId = toOrderId(unvalidatedOrder.orderId)
+            val customerInfo = toCustomerInfo(unvalidatedOrder.customerInfo)
+            val checkedShippingAddress = toCheckedAddress(checkAddressExists, unvalidatedOrder.shippingAddress)
+            val shippingAddress = checkedShippingAddress.flatMap { toAddress(it) }
+            val checkedBillingAddress = toCheckedAddress(checkAddressExists, unvalidatedOrder.billingAddress)
+            val billingAddress = checkedBillingAddress.flatMap { toAddress(it) }
+            val lines = unvalidatedOrder.lines.map { toValidatedOrderLine(checkProductCodeExists, it) }.combine()
+            return orderId.zip(customerInfo, shippingAddress, billingAddress, lines) { o, c, s, b, l ->
+                ValidatedOrder(o, c, s, b, l)
+            }
+        }
+    }
+}
+
+fun List<ValidatedNel<ValidationError, ValidatedOrderLine>>.combine(): ValidatedNel<ValidationError, List<ValidatedOrderLine>> {
+    val errors: MutableList<ValidationError> = ArrayList()
+    val lines: MutableList<ValidatedOrderLine> = ArrayList()
+    for (v in this) {
+        when(v) {
+            is Invalid -> errors.addAll(v.value)
+            is Valid -> lines.add(v.value)
+        }
+    }
+    return if (errors.isNotEmpty()) {
+        Invalid(NonEmptyList.fromListUnsafe(errors))
+    } else {
+        Valid(lines)
+    }
+}
+
+// ---------------------------
+// PriceOrder step
+// ---------------------------
