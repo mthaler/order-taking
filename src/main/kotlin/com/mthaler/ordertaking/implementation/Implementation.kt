@@ -196,6 +196,25 @@ fun toPricedOrderLine(getProductPrice: GetProductPrice, validatedOrderLine: Vali
 }
 
 // ---------------------------
+// AcknowledgeOrder step
+// ---------------------------
+
+val acknowledgeOrder: AcknowledgeOrder = object : AcknowledgeOrder {
+    override fun acknowledgeOrder(
+        createOrderAcknowledgmentLetter: CreateOrderAcknowledgmentLetter,
+        sendOrderAcknowledgment: SendOrderAcknowledgment,
+        pricedOrder: PricedOrder
+    ): Option<OrderAcknowledgmentSent> {
+        val letter = createOrderAcknowledgmentLetter.createOrderAcknowledgmentLetter(pricedOrder)
+        val acknowledgement = OrderAcknowledgment(pricedOrder.customerInfo.emailAddress, letter)
+        return when(sendOrderAcknowledgment.sendOrderAcknowledgment(acknowledgement)) {
+            SendResult.Sent -> Some(OrderAcknowledgmentSent(pricedOrder.orderId, pricedOrder.customerInfo.emailAddress))
+            SendResult.NotSent -> None
+        }
+    }
+}
+
+// ---------------------------
 // Create events
 // ---------------------------
 
