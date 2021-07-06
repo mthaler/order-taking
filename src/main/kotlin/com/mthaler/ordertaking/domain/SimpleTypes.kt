@@ -2,6 +2,8 @@ package com.mthaler.ordertaking.domain
 
 import arrow.core.Option
 import arrow.core.Validated
+import arrow.core.ValidatedNel
+import arrow.core.invalidNel
 import com.mthaler.ordertaking.validation.*
 import java.lang.IllegalArgumentException
 
@@ -17,9 +19,9 @@ typealias Undefined = Nothing
 data class String50 internal constructor(val value: String) {
 
     companion object {
-        operator fun invoke(fieldName: String, str: String): Validated<String, String50> = createString(fieldName, ::String50, 50, str)
+        operator fun invoke(fieldName: String, str: String): ValidatedNel<String, String50> = createString(fieldName, ::String50, 50, str)
 
-        fun createOption(fieldName: String, str: String): Validated<String, Option<String50>> = createStringOption(fieldName, ::String50, 50, str)
+        fun createOption(fieldName: String, str: String): ValidatedNel<String, Option<String50>> = createStringOption(fieldName, ::String50, 50, str)
     }
 }
 
@@ -27,7 +29,7 @@ data class String50 internal constructor(val value: String) {
 data class EmailAddress internal constructor(val value: String) {
 
     companion object {
-        operator fun invoke(fieldName: String, str: String): Validated<String, EmailAddress> = createLike(fieldName, ::EmailAddress, ".+@.+", str)
+        operator fun invoke(fieldName: String, str: String): ValidatedNel<String, EmailAddress> = createLike(fieldName, ::EmailAddress, ".+@.+", str)
     }
 }
 
@@ -35,7 +37,7 @@ data class EmailAddress internal constructor(val value: String) {
 data class ZipCode(val value: String) {
 
     companion object {
-        operator fun invoke(fieldName: String, str: String): Validated<String, ZipCode> = createLike(fieldName, ::ZipCode, """\d{5}""", str)
+        operator fun invoke(fieldName: String, str: String): ValidatedNel<String, ZipCode> = createLike(fieldName, ::ZipCode, """\d{5}""", str)
     }
 }
 
@@ -43,7 +45,7 @@ data class ZipCode(val value: String) {
 data class OrderId internal constructor(val value: String) {
 
     companion object {
-        operator fun invoke(fieldName: String, str: String): Validated<String, OrderId> = createString(fieldName, ::OrderId, 50, str)
+        operator fun invoke(fieldName: String, str: String): ValidatedNel<String, OrderId> = createString(fieldName, ::OrderId, 50, str)
     }
 }
 
@@ -51,7 +53,7 @@ data class OrderId internal constructor(val value: String) {
 data class OrderLineId(val value: String) {
 
     companion object {
-        operator fun invoke(fieldName: String, str: String): Validated<String, OrderLineId> = createString(fieldName, ::OrderLineId, 50, str)
+        operator fun invoke(fieldName: String, str: String): ValidatedNel<String, OrderLineId> = createString(fieldName, ::OrderLineId, 50, str)
     }
 }
 
@@ -62,7 +64,7 @@ sealed class ProductCode {
 
         companion object {
             // The codes for Widgets start with a "W" and then four digits
-            operator fun invoke(fieldName: String, code: String): Validated<String, WidgetCode> = createLike(fieldName, ::WidgetCode, """W\d{4}""", code)
+            operator fun invoke(fieldName: String, code: String): ValidatedNel<String, WidgetCode> = createLike(fieldName, ::WidgetCode, """W\d{4}""", code)
         }
     }
 
@@ -71,29 +73,17 @@ sealed class ProductCode {
 
         companion object {
             // The codes for Widgets start with a "W" and then four digits
-            operator fun invoke(fieldName: String, code: String): Validated<String, GizmoCode> = createLike(fieldName, ::GizmoCode, """G\d{3}""", code)
+            operator fun invoke(fieldName: String, code: String): ValidatedNel<String, GizmoCode> = createLike(fieldName, ::GizmoCode, """G\d{3}""", code)
         }
     }
 
     companion object {
 
-        operator fun invoke(fieldName: String, code: String): Validated<String, ProductCode> {
-            when {
-                code.isEmpty() -> {
-                    val msg = "$fieldName: Must not be empty"
-                    return Validated.Invalid(msg)
-                }
-                code.startsWith("W") -> {
-                    return WidgetCode(fieldName, code)
-                }
-                code.startsWith("G") -> {
-                    return GizmoCode(fieldName, code)
-                }
-                else -> {
-                    val msg =  "$fieldName: Format not recognized '$code'"
-                    return Validated.Invalid(msg)
-                }
-            }
+        operator fun invoke(fieldName: String, code: String): ValidatedNel<String, ProductCode> = when {
+            code.isEmpty() -> "$fieldName: Must not be empty".invalidNel()
+            code.startsWith("W") -> WidgetCode(fieldName, code)
+            code.startsWith("G") -> GizmoCode(fieldName, code)
+            else -> "$fieldName: Format not recognized '$code'".invalidNel()
         }
     }
 }
@@ -104,7 +94,7 @@ sealed class OrderQuantity {
     data class UnitQuantity internal constructor(val value: Int) : OrderQuantity() {
 
         companion object {
-            operator fun invoke(fieldName: String, v: Int): Validated<String, UnitQuantity> = createInt(fieldName, ::UnitQuantity, 1, 1000, v)
+            operator fun invoke(fieldName: String, v: Int): ValidatedNel<String, UnitQuantity> = createInt(fieldName, ::UnitQuantity, 1, 1000, v)
         }
     }
 
@@ -112,19 +102,15 @@ sealed class OrderQuantity {
     data class KilogramQuantity internal constructor(val value: Double) : OrderQuantity() {
 
         companion object {
-            operator fun invoke(fieldName: String, v: Double): Validated<String, KilogramQuantity> = createDecimal(fieldName, ::KilogramQuantity, 0.05, 100.0, v)
+            operator fun invoke(fieldName: String, v: Double): ValidatedNel<String, KilogramQuantity> = createDecimal(fieldName, ::KilogramQuantity, 0.05, 100.0, v)
         }
     }
 
     companion object {
-        operator fun invoke(fieldName: String, productCode: ProductCode, quantity: Number): Validated<String, OrderQuantity> {
+        operator fun invoke(fieldName: String, productCode: ProductCode, quantity: Number): ValidatedNel<String, OrderQuantity> {
             return when(productCode) {
-                is ProductCode.WidgetCode -> {
-                    UnitQuantity(fieldName, quantity.toInt())
-                }
-                is ProductCode.GizmoCode -> {
-                    KilogramQuantity(fieldName, quantity.toDouble())
-                }
+                is ProductCode.WidgetCode -> UnitQuantity(fieldName, quantity.toInt())
+                is ProductCode.GizmoCode -> KilogramQuantity(fieldName, quantity.toDouble())
             }
         }
     }
@@ -134,7 +120,7 @@ sealed class OrderQuantity {
 data class Price internal constructor(val value: Double) {
 
     companion object {
-        operator fun invoke(v: Double): Validated<String, Price> = createDecimal("Price", ::Price, 0.0, 1000.0, v)
+        operator fun invoke(v: Double): ValidatedNel<String, Price> = createDecimal("Price", ::Price, 0.0, 1000.0, v)
 
         fun unsafeCreate(v: Double): Price {
             val p = invoke(v)
@@ -145,18 +131,18 @@ data class Price internal constructor(val value: Double) {
         }
     }
 
-    operator fun times(value: Double): Validated<String, Price> = invoke(this.value * value)
+    operator fun times(value: Double): ValidatedNel<String, Price> = invoke(this.value * value)
 }
 
 /// Constrained to be a decimal between 0.0 and 10000.00
 data class BillingAmount internal constructor(val value: Double) {
 
     companion object {
-        operator fun invoke(v: Double): Validated<String, BillingAmount> = createDecimal("BillingAmount", ::BillingAmount, 0.0, 10000.0, v)
+        operator fun invoke(v: Double): ValidatedNel<String, BillingAmount> = createDecimal("BillingAmount", ::BillingAmount, 0.0, 10000.0, v)
     }
 }
 
-fun List<Price>.sumPrices(): Validated<String, BillingAmount> {
+fun List<Price>.sumPrices(): ValidatedNel<String, BillingAmount> {
     val total = this.map { it.value }.sum()
     return BillingAmount.invoke(total)
 }
