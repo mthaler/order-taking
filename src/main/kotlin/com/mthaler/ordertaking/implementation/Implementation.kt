@@ -51,6 +51,11 @@ data class HtmlString(val value: String)
 
 data class OrderAcknowledgment(val emailAddress: EmailAddress, val letter: HtmlString)
 
+fun interface CreateOrderAcknowledgmentLetter {
+
+    fun createOrderAcknowledgmentLetter(pricedOrder: PricedOrder): HtmlString
+}
+
 /// Send the order acknowledgement to the customer
 /// Note that this does NOT generate an Result-type error (at least not in this workflow)
 /// because on failure we will continue anyway.
@@ -61,9 +66,24 @@ enum class SendResult {
     Sent, NotSent
 }
 
+fun interface SendOrderAcknowledgment {
+
+    fun sendOrderAcknowledgment(orderAcknowledgment: OrderAcknowledgment): SendResult
+}
+
+fun interface AcknowledgeOrder {
+
+    fun acknowledgeOrder(createOrderAcknowledgmentLetter: CreateOrderAcknowledgmentLetter, sendOrderAcknowledgment: SendOrderAcknowledgment, pricedOrder: PricedOrder): Option<OrderAcknowledgmentSent>
+}
+
 // ---------------------------
 // Create events
 // ---------------------------
+
+fun interface CreateEvents {
+
+    fun createEvents(pricedOrder: PricedOrder, orderAcknowledgmentSent: Option<OrderAcknowledgmentSent>): List<PlaceOrderEvent>
+}
 
 // ======================================================
 // Section 2 : Implementation
@@ -167,3 +187,9 @@ fun List<ValidatedNel<ValidationError, ValidatedOrderLine>>.combine(): Validated
 // ---------------------------
 // PriceOrder step
 // ---------------------------
+
+// ---------------------------
+// Create events
+// ---------------------------
+
+fun createOrderPlacedEvent(placedOrder: PricedOrder): OrderPlaced = OrderPlaced(placedOrder)
