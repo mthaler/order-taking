@@ -2,6 +2,7 @@ package com.mthaler.ordertaking.implementation
 
 import arrow.core.ValidatedNel
 import arrow.core.zip
+import com.mthaler.ordertaking.common.UnvalidatedAddress
 import com.mthaler.ordertaking.common.UnvalidatedCustomerInfo
 import com.mthaler.ordertaking.common.ValidationError
 import com.mthaler.ordertaking.domain.*
@@ -14,6 +15,8 @@ fun interface CheckProductCodeExists {
 enum class AddressValidationError {
     InvalidFormat, AddressNotFound
 }
+
+data class CheckedAddress(val value: UnvalidatedAddress)
 
 // ---------------------------
 // Validated Order
@@ -68,6 +71,18 @@ fun toCustomerInfo(unvalidatedCustomerInfo: UnvalidatedCustomerInfo): ValidatedN
     val emailAddress = EmailAddress("EmailAddress", unvalidatedCustomerInfo.emailAddress).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
     return firstName.zip(lastName, emailAddress) { f, l, e ->
         CustomerInfo(PersonalName(f, l), e)
+    }
+}
+
+fun toAddress(unvalidatedAddress: CheckedAddress): ValidatedNel<ValidationError, Address> {
+    val addressLine1 = String50("AddressLine1", unvalidatedAddress.value.addressLine1).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
+    val addressLine2 = String50.createOption("AddressLine2", unvalidatedAddress.value.addressLine2).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
+    val addressLine3 = String50.createOption("AddressLine3", unvalidatedAddress.value.addressLine3).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
+    val addressLine4 = String50.createOption("AddressLine4", unvalidatedAddress.value.addressLine4).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
+    val city = String50("City", unvalidatedAddress.value.city).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
+    val zipCode = ZipCode("ZipCode", unvalidatedAddress.value.zipCode).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
+    return addressLine1.zip(addressLine2, addressLine3, addressLine4, city, zipCode) { a1, a2, a3, a4, c, z ->
+        Address(a1, a2, a3, a4, c, z)
     }
 }
 
