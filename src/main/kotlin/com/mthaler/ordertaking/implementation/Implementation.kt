@@ -103,9 +103,14 @@ fun toOrderId(orderId: String): ValidatedNel<ValidationError, OrderId> = OrderId
 /// Helper function for validateOrder
 fun toOrderLineId(orderLineId: String): ValidatedNel<ValidationError, OrderLineId> = OrderLineId("OrderLineId", orderLineId).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
 
+/// Helper function for validateOrder
 fun toProductCode(checkProductCodeExists: CheckProductCodeExists, productCode: String): ValidatedNel<ValidationError, ProductCode> {
 
     fun checkProduct(productCode: ProductCode): ValidatedNel<ValidationError, ProductCode> = if (checkProductCodeExists.checkExists(productCode)) Valid(productCode) else ValidationError("Invalid: $productCode").invalidNel()
 
     return ProductCode("ProductCode", productCode).mapLeft { errors -> errors.map { str -> ValidationError(str) } }.flatMap { checkProduct(it) }
 }
+
+/// Helper function for validateOrder
+fun toOrderQuantity(productCode: ProductCode, quantity: Number): ValidatedNel<ValidationError, OrderQuantity> =
+    OrderQuantity("OrderQuantity", productCode, quantity).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
