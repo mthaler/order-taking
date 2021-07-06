@@ -1,5 +1,9 @@
 package com.mthaler.ordertaking.implementation
 
+import arrow.core.ValidatedNel
+import arrow.core.zip
+import com.mthaler.ordertaking.common.UnvalidatedCustomerInfo
+import com.mthaler.ordertaking.common.ValidationError
 import com.mthaler.ordertaking.domain.*
 
 fun interface CheckProductCodeExists {
@@ -57,3 +61,12 @@ enum class SendResult {
 // ---------------------------
 // ValidateOrder step
 // ---------------------------
+
+fun toCustomerInfo(unvalidatedCustomerInfo: UnvalidatedCustomerInfo): ValidatedNel<ValidationError, CustomerInfo> {
+    val firstName = String50("FirstName", unvalidatedCustomerInfo.firstName).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
+    val lastName = String50("LastName", unvalidatedCustomerInfo.lastName).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
+    val emailAddress = EmailAddress("EmailAddress", unvalidatedCustomerInfo.emailAddress).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
+    return firstName.zip(lastName, emailAddress) { f, l, e ->
+        CustomerInfo(PersonalName(f, l), e)
+    }
+}
