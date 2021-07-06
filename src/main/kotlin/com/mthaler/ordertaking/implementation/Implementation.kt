@@ -70,3 +70,8 @@ fun toCustomerInfo(unvalidatedCustomerInfo: UnvalidatedCustomerInfo): ValidatedN
         CustomerInfo(PersonalName(f, l), e)
     }
 }
+
+fun toOrderId(orderId: String): ValidatedNel<ValidationError, OrderId> = OrderId("OrderId", orderId).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
+
+/// Helper function for validateOrder
+fun toOrderLineId(orderLineId: String): ValidatedNel<ValidationError, OrderLineId> = OrderLineId("OrderLineId", orderLineId).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
