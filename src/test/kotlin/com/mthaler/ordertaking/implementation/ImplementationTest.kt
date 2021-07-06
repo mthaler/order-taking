@@ -36,4 +36,12 @@ class ImplementationTest: StringSpec({
             }
         }
     }
+
+    "toProductCode" {
+        toProductCode({ productCode -> true }, "W1234") shouldBe Valid(ProductCode.WidgetCode("W1234"))
+        toProductCode({ productCode -> true }, "G123") shouldBe Valid(ProductCode.GizmoCode("G123"))
+        toProductCode({ productCode -> true }, "foo") shouldBe ValidationError("ProductCode: Format not recognized 'foo'").invalidNel()
+        toProductCode({ productCode -> false }, "G123") shouldBe ValidationError("Invalid: GizmoCode(value=G123)").invalidNel()
+        toProductCode({ productCode -> false }, "foo") shouldBe ValidationError("ProductCode: Format not recognized 'foo'").invalidNel()
+    }
 })
