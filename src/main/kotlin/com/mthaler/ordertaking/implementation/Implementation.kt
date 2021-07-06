@@ -18,6 +18,11 @@ enum class AddressValidationError {
 
 data class CheckedAddress(val value: UnvalidatedAddress)
 
+fun interface CheckAddressExists {
+
+    suspend fun checkAddressExists(unvalidatedAddress: UnvalidatedAddress): ValidatedNel<AddressValidationError, CheckedAddress>
+}
+
 // ---------------------------
 // Validated Order
 // ---------------------------
@@ -85,6 +90,12 @@ fun toAddress(unvalidatedAddress: CheckedAddress): ValidatedNel<ValidationError,
         Address(a1, a2, a3, a4, c, z)
     }
 }
+
+suspend fun toCheckedAddress(checkAddress: CheckAddressExists, address: UnvalidatedAddress): ValidatedNel<ValidationError, CheckedAddress> =
+    checkAddress.checkAddressExists(address).mapLeft { errors -> errors.map { err -> when(err) {
+        AddressValidationError.AddressNotFound -> ValidationError("Address not found")
+        AddressValidationError.InvalidFormat -> ValidationError("Address has bad format")
+    } } }
 
 fun toOrderId(orderId: String): ValidatedNel<ValidationError, OrderId> = OrderId("OrderId", orderId).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
 
