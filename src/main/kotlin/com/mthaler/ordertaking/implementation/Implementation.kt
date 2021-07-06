@@ -1,11 +1,11 @@
 package com.mthaler.ordertaking.implementation
 
-import arrow.core.ValidatedNel
-import arrow.core.zip
+import arrow.core.*
 import com.mthaler.ordertaking.common.UnvalidatedAddress
 import com.mthaler.ordertaking.common.UnvalidatedCustomerInfo
 import com.mthaler.ordertaking.common.ValidationError
 import com.mthaler.ordertaking.domain.*
+import com.mthaler.ordertaking.utils.flatMap
 
 fun interface CheckProductCodeExists {
 
@@ -91,6 +91,7 @@ fun toAddress(unvalidatedAddress: CheckedAddress): ValidatedNel<ValidationError,
     }
 }
 
+/// Call the checkAddressExists and convert the error to a ValidationError
 suspend fun toCheckedAddress(checkAddress: CheckAddressExists, address: UnvalidatedAddress): ValidatedNel<ValidationError, CheckedAddress> =
     checkAddress.checkAddressExists(address).mapLeft { errors -> errors.map { err -> when(err) {
         AddressValidationError.AddressNotFound -> ValidationError("Address not found")
@@ -101,3 +102,10 @@ fun toOrderId(orderId: String): ValidatedNel<ValidationError, OrderId> = OrderId
 
 /// Helper function for validateOrder
 fun toOrderLineId(orderLineId: String): ValidatedNel<ValidationError, OrderLineId> = OrderLineId("OrderLineId", orderLineId).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
+
+fun toProductCode(checkProductCodeExists: CheckProductCodeExists, productCode: String): ValidatedNel<ValidationError, ProductCode> {
+
+    fun checkProduct(productCode: ProductCode): ValidatedNel<ValidationError, ProductCode> = if (checkProductCodeExists.checkExists(productCode)) Valid(productCode) else ValidationError("Invalid: $productCode").invalidNel()
+
+    return ProductCode("ProductCode", productCode).mapLeft { errors -> errors.map { str -> ValidationError(str) } }.flatMap { checkProduct(it) }
+}
