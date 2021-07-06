@@ -7,6 +7,8 @@ import com.mthaler.ordertaking.common.ValidationError
 import com.mthaler.ordertaking.domain.*
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class ImplementationTest: StringSpec({
 
@@ -22,5 +24,16 @@ class ImplementationTest: StringSpec({
     "toAddress" {
         toAddress(CheckedAddress(UnvalidatedAddress("Wall Street", "", "", "", "New York", "12345"))) shouldBe
                 Valid(Address(String50("Wall Street"), None, None, None, String50("New York"), ZipCode("12345")))
+    }
+
+    "toCheckedAddress" {
+        runBlocking {
+            launch {
+                val address = UnvalidatedAddress("Wall Street", "", "", "", "New York", "12345")
+                toCheckedAddress(CheckAddressExistsMock(false), address) shouldBe ValidationError("Address not found").invalidNel()
+                toCheckedAddress(CheckAddressExistsMock(true), address) shouldBe Valid(CheckedAddress(address))
+
+            }
+        }
     }
 })
