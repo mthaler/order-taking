@@ -1,15 +1,10 @@
 package com.mthaler.ordertaking.implementation
 
-import arrow.core.Invalid
-import arrow.core.Valid
-import arrow.core.invalidNel
-import arrow.core.nonEmptyListOf
+import arrow.core.*
+import com.mthaler.ordertaking.common.UnvalidatedAddress
 import com.mthaler.ordertaking.common.UnvalidatedCustomerInfo
 import com.mthaler.ordertaking.common.ValidationError
-import com.mthaler.ordertaking.domain.CustomerInfo
-import com.mthaler.ordertaking.domain.EmailAddress
-import com.mthaler.ordertaking.domain.PersonalName
-import com.mthaler.ordertaking.domain.String50
+import com.mthaler.ordertaking.domain.*
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
@@ -22,5 +17,10 @@ class ImplementationTest: StringSpec({
             nonEmptyListOf(ValidationError("FirstName must not be more than 50 chars"), ValidationError("LastName must not be more than 50 chars")))
         toCustomerInfo(UnvalidatedCustomerInfo("a", "b", "a@b")) shouldBe Valid(
             CustomerInfo(PersonalName(String50("a"), String50("b")), EmailAddress("a@b")))
+    }
+
+    "toAddress" {
+//        toAddress(CheckedAddress(UnvalidatedAddress("Wall Street", "", "", "", "Mew York", "12345"))) shouldBe
+//                Valid(Address(String50("Wall Street"), None, None, None, String50("New York"), ZipCode("12345")))
     }
 })
