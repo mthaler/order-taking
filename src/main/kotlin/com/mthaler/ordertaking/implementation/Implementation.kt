@@ -188,6 +188,13 @@ fun List<ValidatedNel<ValidationError, ValidatedOrderLine>>.combine(): Validated
 // PriceOrder step
 // ---------------------------
 
+fun toPricedOrderLine(getProductPrice: GetProductPrice, validatedOrderLine: ValidatedOrderLine): ValidatedNel<PricingError, PricedOrderLine> {
+    val qty = validatedOrderLine.quantity.value()
+    val price = getProductPrice.getProductPrice(validatedOrderLine.productCode)
+    val linePrice = (price * qty.toDouble()).mapLeft { errors -> errors.map { str -> PricingError(str) } }
+    return linePrice.map { PricedOrderLine(validatedOrderLine.orderLineId, validatedOrderLine.productCode, validatedOrderLine.quantity, it) }
+}
+
 // ---------------------------
 // Create events
 // ---------------------------

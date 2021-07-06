@@ -106,6 +106,11 @@ sealed class OrderQuantity {
         }
     }
 
+    fun value(): Number = when(this) {
+        is UnitQuantity -> value
+        is KilogramQuantity -> value
+    }
+
     companion object {
         operator fun invoke(fieldName: String, productCode: ProductCode, quantity: Number): ValidatedNel<String, OrderQuantity> {
             return when(productCode) {
