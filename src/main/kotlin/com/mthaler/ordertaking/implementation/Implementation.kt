@@ -3,6 +3,7 @@ package com.mthaler.ordertaking.implementation
 import arrow.core.*
 import com.mthaler.ordertaking.common.UnvalidatedAddress
 import com.mthaler.ordertaking.common.UnvalidatedCustomerInfo
+import com.mthaler.ordertaking.common.UnvalidatedOrderLine
 import com.mthaler.ordertaking.common.ValidationError
 import com.mthaler.ordertaking.domain.*
 import com.mthaler.ordertaking.utils.flatMap
@@ -114,3 +115,12 @@ fun toProductCode(checkProductCodeExists: CheckProductCodeExists, productCode: S
 /// Helper function for validateOrder
 fun toOrderQuantity(productCode: ProductCode, quantity: Number): ValidatedNel<ValidationError, OrderQuantity> =
     OrderQuantity("OrderQuantity", productCode, quantity).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
+
+fun toValidatedOrderLine(checkProductCodeExists: CheckProductCodeExists, unvalidatedOrderLine: UnvalidatedOrderLine): ValidatedNel<ValidationError, ValidatedOrderLine> {
+    val orderLineId = toOrderLineId(unvalidatedOrderLine.orderLineId)
+    val productCode = toProductCode(checkProductCodeExists, unvalidatedOrderLine.productCode)
+    val quantity = productCode.flatMap { toOrderQuantity(it, unvalidatedOrderLine.quantity) }
+    return orderLineId.zip(productCode, quantity) { o, p, q ->
+        ValidatedOrderLine(o, p, q)
+    }
+}
