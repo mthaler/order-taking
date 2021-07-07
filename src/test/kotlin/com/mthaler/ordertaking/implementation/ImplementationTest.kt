@@ -9,11 +9,11 @@ import io.kotest.matchers.shouldBe
 class ImplementationTest: StringSpec({
 
     "toCustomerInfo" {
-        toCustomerInfo(UnvalidatedCustomerInfo("a".repeat(60), "b", "a@b")) shouldBe ValidationError("FirstName must not be more than 50 chars").invalidNel()
-        toCustomerInfo(UnvalidatedCustomerInfo("a", "b".repeat(60), "a@b")) shouldBe ValidationError("LastName must not be more than 50 chars").invalidNel()
-        toCustomerInfo(UnvalidatedCustomerInfo("a".repeat(60), "b".repeat(60), "a@b")) shouldBe Invalid(
+        UnvalidatedCustomerInfo("a".repeat(60), "b", "a@b").toCustomerInfo() shouldBe ValidationError("FirstName must not be more than 50 chars").invalidNel()
+        UnvalidatedCustomerInfo("a", "b".repeat(60), "a@b").toCustomerInfo() shouldBe ValidationError("LastName must not be more than 50 chars").invalidNel()
+        UnvalidatedCustomerInfo("a".repeat(60), "b".repeat(60), "a@b").toCustomerInfo() shouldBe Invalid(
             nonEmptyListOf(ValidationError("FirstName must not be more than 50 chars"), ValidationError("LastName must not be more than 50 chars")))
-        toCustomerInfo(UnvalidatedCustomerInfo("a", "b", "a@b")) shouldBe Valid(
+        UnvalidatedCustomerInfo("a", "b", "a@b").toCustomerInfo() shouldBe Valid(
             CustomerInfo(PersonalName(String50("a"), String50("b")), EmailAddress("a@b")))
     }
 

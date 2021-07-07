@@ -99,10 +99,10 @@ fun interface CreateEvents {
 // ValidateOrder step
 // ---------------------------
 
-fun toCustomerInfo(unvalidatedCustomerInfo: UnvalidatedCustomerInfo): ValidatedNel<ValidationError, CustomerInfo> {
-    val firstName = String50("FirstName", unvalidatedCustomerInfo.firstName).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
-    val lastName = String50("LastName", unvalidatedCustomerInfo.lastName).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
-    val emailAddress = EmailAddress("EmailAddress", unvalidatedCustomerInfo.emailAddress).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
+fun UnvalidatedCustomerInfo.toCustomerInfo(): ValidatedNel<ValidationError, CustomerInfo> {
+    val firstName = String50("FirstName", this.firstName).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
+    val lastName = String50("LastName", this.lastName).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
+    val emailAddress = EmailAddress("EmailAddress", this.emailAddress).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
     return firstName.zip(lastName, emailAddress) { f, l, e ->
         CustomerInfo(PersonalName(f, l), e)
     }
@@ -160,7 +160,7 @@ val validateOrder = object : ValidateOrder {
         unvalidatedOrder: UnvalidatedOrder
     ): ValidatedNel<ValidationError, ValidatedOrder> {
         val orderId = toOrderId(unvalidatedOrder.orderId)
-        val customerInfo = toCustomerInfo(unvalidatedOrder.customerInfo)
+        val customerInfo = unvalidatedOrder.customerInfo.toCustomerInfo()
         val checkedShippingAddress = toCheckedAddress(checkAddressExists, unvalidatedOrder.shippingAddress)
         val shippingAddress = checkedShippingAddress.flatMap { toAddress(it) }
         val checkedBillingAddress = toCheckedAddress(checkAddressExists, unvalidatedOrder.billingAddress)
