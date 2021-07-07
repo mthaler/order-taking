@@ -26,4 +26,11 @@ data class CustomerInfoDto(val firstName: String, val lastName: String, val emai
             CustomerInfo(name, e)
         }
     }
+
+    companion object {
+
+        /// Convert a CustomerInfo object into the corresponding DTO.
+        /// Used when exporting from the domain to the outside world.
+        fun fromCustomerInfo(domainObj: CustomerInfo): CustomerInfoDto = CustomerInfoDto(domainObj.name.firstName.value, domainObj.name.lastName.value, domainObj.emailAddress.value)
+    }
 }
