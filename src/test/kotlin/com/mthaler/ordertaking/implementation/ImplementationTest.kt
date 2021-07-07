@@ -42,6 +42,11 @@ class ImplementationTest: StringSpec({
         toOrderId("a".repeat(60)) shouldBe ValidationError("OrderId must not be more than 50 chars").invalidNel()
     }
 
+    "toOrderLineId" {
+        toOrderLineId("test") shouldBe Valid(OrderLineId("test"))
+        toOrderLineId("a".repeat(60)) shouldBe ValidationError("OrderLineId must not be more than 50 chars").invalidNel()
+    }
+
     "toProductCode" {
         toProductCode({ productCode -> true }, "W1234") shouldBe Valid(ProductCode.WidgetCode("W1234"))
         toProductCode({ productCode -> true }, "G123") shouldBe Valid(ProductCode.GizmoCode("G123"))
