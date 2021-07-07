@@ -3,6 +3,7 @@ package com.mthaler.ordertaking.implementation
 import arrow.core.*
 import com.mthaler.ordertaking.common.UnvalidatedAddress
 import com.mthaler.ordertaking.common.UnvalidatedCustomerInfo
+import com.mthaler.ordertaking.common.UnvalidatedOrderLine
 import com.mthaler.ordertaking.common.ValidationError
 import com.mthaler.ordertaking.domain.*
 import io.kotest.core.spec.style.StringSpec
@@ -60,5 +61,12 @@ class ImplementationTest: StringSpec({
         toOrderQuantity(ProductCode.WidgetCode("W1234"), 0) shouldBe ValidationError("OrderQuantity: Must not be less than 1").invalidNel()
         toOrderQuantity(ProductCode.GizmoCode("G123"), 25.0) shouldBe Valid(OrderQuantity.KilogramQuantity(25.0))
         toOrderQuantity(ProductCode.GizmoCode("G123"), 0.0) shouldBe ValidationError("OrderQuantity: Must not be less than 0.05").invalidNel()
+    }
+
+    "toValidatedOrderLine" {
+        toValidatedOrderLine({ productCode -> true }, UnvalidatedOrderLine("test", "W1234", 25.0)) shouldBe
+                Valid(ValidatedOrderLine(OrderLineId("test"), ProductCode.WidgetCode("W1234"), OrderQuantity.UnitQuantity(25)))
+        toValidatedOrderLine({ productCode -> true }, UnvalidatedOrderLine("test", "foo", 25.0)) shouldBe
+                Invalid(nonEmptyListOf(ValidationError("ProductCode: Format not recognized 'foo'"), ValidationError("ProductCode: Format not recognized 'foo'")))
     }
 })
