@@ -3,6 +3,7 @@ package com.mthaler.ordertaking.implementation
 import arrow.core.*
 import com.mthaler.ordertaking.common.*
 import com.mthaler.ordertaking.domain.*
+import com.mthaler.ordertaking.utils.combine
 import com.mthaler.ordertaking.utils.flatMap
 
 fun interface CheckProductCodeExists {
@@ -152,40 +153,22 @@ fun toValidatedOrderLine(checkProductCodeExists: CheckProductCodeExists, unvalid
     }
 }
 
-suspend fun validateOrder(): ValidateOrder {
-    return object : ValidateOrder {
-        override suspend fun validateOrder(
-            checkProductCodeExists: CheckProductCodeExists,
-            checkAddressExists: CheckAddressExists,
-            unvalidatedOrder: UnvalidatedOrder
-        ): ValidatedNel<ValidationError, ValidatedOrder> {
-            val orderId = toOrderId(unvalidatedOrder.orderId)
-            val customerInfo = toCustomerInfo(unvalidatedOrder.customerInfo)
-            val checkedShippingAddress = toCheckedAddress(checkAddressExists, unvalidatedOrder.shippingAddress)
-            val shippingAddress = checkedShippingAddress.flatMap { toAddress(it) }
-            val checkedBillingAddress = toCheckedAddress(checkAddressExists, unvalidatedOrder.billingAddress)
-            val billingAddress = checkedBillingAddress.flatMap { toAddress(it) }
-            val lines = unvalidatedOrder.lines.map { toValidatedOrderLine(checkProductCodeExists, it) }.combine()
-            return orderId.zip(customerInfo, shippingAddress, billingAddress, lines) { o, c, s, b, l ->
-                ValidatedOrder(o, c, s, b, l)
-            }
+val validateOrder: ValidateOrder = object : ValidateOrder {
+    override suspend fun validateOrder(
+        checkProductCodeExists: CheckProductCodeExists,
+        checkAddressExists: CheckAddressExists,
+        unvalidatedOrder: UnvalidatedOrder
+    ): ValidatedNel<ValidationError, ValidatedOrder> {
+        val orderId = toOrderId(unvalidatedOrder.orderId)
+        val customerInfo = toCustomerInfo(unvalidatedOrder.customerInfo)
+        val checkedShippingAddress = toCheckedAddress(checkAddressExists, unvalidatedOrder.shippingAddress)
+        val shippingAddress = checkedShippingAddress.flatMap { toAddress(it) }
+        val checkedBillingAddress = toCheckedAddress(checkAddressExists, unvalidatedOrder.billingAddress)
+        val billingAddress = checkedBillingAddress.flatMap { toAddress(it) }
+        val lines = unvalidatedOrder.lines.map { toValidatedOrderLine(checkProductCodeExists, it) }.combine()
+        return orderId.zip(customerInfo, shippingAddress, billingAddress, lines) { o, c, s, b, l ->
+            ValidatedOrder(o, c, s, b, l)
         }
-    }
-}
-
-fun List<ValidatedNel<ValidationError, ValidatedOrderLine>>.combine(): ValidatedNel<ValidationError, List<ValidatedOrderLine>> {
-    val errors: MutableList<ValidationError> = ArrayList()
-    val lines: MutableList<ValidatedOrderLine> = ArrayList()
-    for (v in this) {
-        when(v) {
-            is Invalid -> errors.addAll(v.value)
-            is Valid -> lines.add(v.value)
-        }
-    }
-    return if (errors.isNotEmpty()) {
-        Invalid(NonEmptyList.fromListUnsafe(errors))
-    } else {
-        Valid(lines)
     }
 }
 
@@ -198,6 +181,19 @@ fun toPricedOrderLine(getProductPrice: GetProductPrice, validatedOrderLine: Vali
     val price = getProductPrice.getProductPrice(validatedOrderLine.productCode)
     val linePrice = (price * qty.toDouble()).mapLeft { errors -> errors.map { str -> PricingError(str) } }
     return linePrice.map { PricedOrderLine(validatedOrderLine.orderLineId, validatedOrderLine.productCode, validatedOrderLine.quantity, it) }
+}
+
+val priceOrder : PriceOrder = object : PriceOrder {
+    override fun priceOrder(
+        getProductPrice: GetProductPrice,
+        validatedOrder: ValidatedOrder
+    ): ValidatedNel<PricingError, PricedOrder> {
+        val lines = validatedOrder.lines.map { toPricedOrderLine(getProductPrice, it) }.combine()
+        val amountToBill= lines.map { l -> l.map { it.linePrice } }.flatMap { it.sumPrices().mapLeft { errors -> errors.map { str -> PricingError(str) } } }
+        return lines.zip(amountToBill) { l, a ->
+            PricedOrder(validatedOrder.orderId, validatedOrder.customerInfo, validatedOrder.shippingAddress, validatedOrder.billingAddress, a, l)
+        }
+    }
 }
 
 // ---------------------------
