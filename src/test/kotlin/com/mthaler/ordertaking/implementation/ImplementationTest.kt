@@ -1,10 +1,7 @@
 package com.mthaler.ordertaking.implementation
 
 import arrow.core.*
-import com.mthaler.ordertaking.common.UnvalidatedAddress
-import com.mthaler.ordertaking.common.UnvalidatedCustomerInfo
-import com.mthaler.ordertaking.common.UnvalidatedOrderLine
-import com.mthaler.ordertaking.common.ValidationError
+import com.mthaler.ordertaking.common.*
 import com.mthaler.ordertaking.domain.*
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
@@ -28,14 +25,9 @@ class ImplementationTest: StringSpec({
     }
 
     "toCheckedAddress" {
-        runBlocking {
-            launch {
-                val address = UnvalidatedAddress("Wall Street", "", "", "", "New York", "12345")
-                toCheckedAddress(CheckAddressExistsMock(false), address) shouldBe ValidationError("Address not found").invalidNel()
-                toCheckedAddress(CheckAddressExistsMock(true), address) shouldBe Valid(CheckedAddress(address))
-
-            }
-        }
+        val address = UnvalidatedAddress("Wall Street", "", "", "", "New York", "12345")
+        toCheckedAddress(CheckAddressExistsMock(false), address) shouldBe ValidationError("Address not found").invalidNel()
+        toCheckedAddress(CheckAddressExistsMock(true), address) shouldBe Valid(CheckedAddress(address))
     }
 
     "toOrderId" {
@@ -68,5 +60,14 @@ class ImplementationTest: StringSpec({
                 Valid(ValidatedOrderLine(OrderLineId("test"), ProductCode.WidgetCode("W1234"), OrderQuantity.UnitQuantity(25)))
         toValidatedOrderLine({ productCode -> true }, UnvalidatedOrderLine("test", "foo", 25.0)) shouldBe
                 Invalid(nonEmptyListOf(ValidationError("ProductCode: Format not recognized 'foo'"), ValidationError("ProductCode: Format not recognized 'foo'")))
+    }
+
+    "validateOrder" {
+        val order = UnvalidatedOrder("test", UnvalidatedCustomerInfo("John", "Doe", "john.doe@example.com"),
+            UnvalidatedAddress("Wall Street", "", "", "", "New York", "12345"),
+            UnvalidatedAddress("Wall Street", "", "", "", "New York", "12345"),
+            listOf(UnvalidatedOrderLine("test", "W1234", 25))
+        )
+        println(validateOrder.validateOrder({ productCode -> true }, CheckAddressExistsMock(true), order))
     }
 })
