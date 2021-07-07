@@ -48,7 +48,6 @@ data class AddressDto(val addressLine1: String, val addressLine2: String, val ad
 
     /// Convert the DTO into a Address object
     /// Used when importing from the outside world into the domain, eg loading from a database.
-
     fun toAddress(): ValidatedNel<String, Address> {
         val addressLine1 = String50("AddressLine1", addressLine1)
         val addressLine2 = String50.createOption("AddressLine2", addressLine2)
@@ -63,6 +62,8 @@ data class AddressDto(val addressLine1: String, val addressLine2: String, val ad
 
     companion object {
 
+        /// Convert a Address object into the corresponding DTO.
+        /// Used when exporting from the domain to the outside world.
         fun fromAddress(domainObj: Address): AddressDto = AddressDto(domainObj.addressLine1.value,
             domainObj.addressLine2.map { it.value }.getOrElse { "" },
             domainObj.addressLine3.map { it.value }.getOrElse { "" },
