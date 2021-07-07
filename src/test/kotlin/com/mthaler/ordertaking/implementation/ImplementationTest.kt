@@ -29,13 +29,13 @@ class ImplementationTest: StringSpec({
     }
 
     "toOrderId" {
-        toOrderId("test") shouldBe Valid(OrderId("test"))
-        toOrderId("a".repeat(60)) shouldBe ValidationError("OrderId must not be more than 50 chars").invalidNel()
+        "test".toOrderId() shouldBe Valid(OrderId("test"))
+        "a".repeat(60).toOrderId() shouldBe ValidationError("OrderId must not be more than 50 chars").invalidNel()
     }
 
     "toOrderLineId" {
-        toOrderLineId("test") shouldBe Valid(OrderLineId("test"))
-        toOrderLineId("a".repeat(60)) shouldBe ValidationError("OrderLineId must not be more than 50 chars").invalidNel()
+        "test".toOrderLineId() shouldBe Valid(OrderLineId("test"))
+        "a".repeat(60).toOrderLineId() shouldBe ValidationError("OrderLineId must not be more than 50 chars").invalidNel()
     }
 
     "toProductCode" {

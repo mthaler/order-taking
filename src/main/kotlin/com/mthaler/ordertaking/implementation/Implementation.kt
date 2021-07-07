@@ -127,10 +127,10 @@ suspend fun toCheckedAddress(checkAddress: CheckAddressExists, address: Unvalida
         AddressValidationError.InvalidFormat -> ValidationError("Address has bad format")
     } } }
 
-fun toOrderId(orderId: String): ValidatedNel<ValidationError, OrderId> = OrderId("OrderId", orderId).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
+fun String.toOrderId(): ValidatedNel<ValidationError, OrderId> = OrderId("OrderId", this).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
 
 /// Helper function for validateOrder
-fun toOrderLineId(orderLineId: String): ValidatedNel<ValidationError, OrderLineId> = OrderLineId("OrderLineId", orderLineId).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
+fun String.toOrderLineId(): ValidatedNel<ValidationError, OrderLineId> = OrderLineId("OrderLineId", this).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
 
 /// Helper function for validateOrder
 fun toProductCode(checkProductCodeExists: CheckProductCodeExists, productCode: String): ValidatedNel<ValidationError, ProductCode> {
@@ -145,7 +145,7 @@ fun toOrderQuantity(productCode: ProductCode, quantity: Number): ValidatedNel<Va
     OrderQuantity("OrderQuantity", productCode, quantity).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
 
 fun toValidatedOrderLine(checkProductCodeExists: CheckProductCodeExists, unvalidatedOrderLine: UnvalidatedOrderLine): ValidatedNel<ValidationError, ValidatedOrderLine> {
-    val orderLineId = toOrderLineId(unvalidatedOrderLine.orderLineId)
+    val orderLineId = unvalidatedOrderLine.orderLineId.toOrderLineId()
     val productCode = toProductCode(checkProductCodeExists, unvalidatedOrderLine.productCode)
     val quantity = productCode.flatMap { toOrderQuantity(it, unvalidatedOrderLine.quantity) }
     return orderLineId.zip(productCode, quantity) { o, p, q ->
@@ -159,7 +159,7 @@ val validateOrder = object : ValidateOrder {
         checkAddressExists: CheckAddressExists,
         unvalidatedOrder: UnvalidatedOrder
     ): ValidatedNel<ValidationError, ValidatedOrder> {
-        val orderId = toOrderId(unvalidatedOrder.orderId)
+        val orderId = unvalidatedOrder.orderId.toOrderId()
         val customerInfo = unvalidatedOrder.customerInfo.toCustomerInfo()
         val checkedShippingAddress = toCheckedAddress(checkAddressExists, unvalidatedOrder.shippingAddress)
         val shippingAddress = checkedShippingAddress.flatMap { it.toAddress() }
