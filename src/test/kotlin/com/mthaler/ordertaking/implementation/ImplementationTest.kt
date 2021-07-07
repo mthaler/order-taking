@@ -54,4 +54,11 @@ class ImplementationTest: StringSpec({
         toProductCode({ productCode -> false }, "G123") shouldBe ValidationError("Invalid: GizmoCode(value=G123)").invalidNel()
         toProductCode({ productCode -> false }, "foo") shouldBe ValidationError("ProductCode: Format not recognized 'foo'").invalidNel()
     }
+
+    "toOrderQuantity" {
+        toOrderQuantity(ProductCode.WidgetCode("W1234"), 25) shouldBe Valid(OrderQuantity.UnitQuantity(25))
+        toOrderQuantity(ProductCode.WidgetCode("W1234"), 0) shouldBe ValidationError("OrderQuantity: Must not be less than 1").invalidNel()
+        toOrderQuantity(ProductCode.GizmoCode("G123"), 25.0) shouldBe Valid(OrderQuantity.KilogramQuantity(25.0))
+        toOrderQuantity(ProductCode.GizmoCode("G123"), 0.0) shouldBe ValidationError("OrderQuantity: Must not be less than 0.05").invalidNel()
+    }
 })
