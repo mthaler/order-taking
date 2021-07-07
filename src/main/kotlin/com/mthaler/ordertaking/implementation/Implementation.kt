@@ -8,7 +8,7 @@ import com.mthaler.ordertaking.utils.flatMap
 
 fun interface CheckProductCodeExists {
 
-    fun checkExists(productCode: ProductCode): Boolean
+    operator fun invoke(productCode: ProductCode): Boolean
 }
 
 enum class AddressValidationError {
@@ -135,7 +135,7 @@ fun String.toOrderLineId(): ValidatedNel<ValidationError, OrderLineId> = OrderLi
 /// Helper function for validateOrder
 fun toProductCode(checkProductCodeExists: CheckProductCodeExists, productCode: String): ValidatedNel<ValidationError, ProductCode> {
 
-    fun checkProduct(productCode: ProductCode): ValidatedNel<ValidationError, ProductCode> = if (checkProductCodeExists.checkExists(productCode)) Valid(productCode) else ValidationError("Invalid: $productCode").invalidNel()
+    fun checkProduct(productCode: ProductCode): ValidatedNel<ValidationError, ProductCode> = if (checkProductCodeExists(productCode)) Valid(productCode) else ValidationError("Invalid: $productCode").invalidNel()
 
     return ProductCode("ProductCode", productCode).mapLeft { errors -> errors.map { str -> ValidationError(str) } }.flatMap { checkProduct(it) }
 }
