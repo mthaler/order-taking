@@ -32,14 +32,11 @@ data class PricedOrderLine(val orderLineId: OrderLineId, val productCode: Produc
 
 data class PricedOrder(val orderId: OrderId, val customerInfo: CustomerInfo, val shippingAddress: Address, val billingAddress: Address, val amountToBill: BillingAmount, val lines : List<PricedOrderLine>)
 
-/// Event to send to shipping context
-data class OrderPlaced(val value: PricedOrder)
-
 /// The possible events resulting from the PlaceOrder workflow
 /// Not all events will occur, depending on the logic of the workflow
 sealed class PlaceOrderEvent {
 
-    data class PricedOrder(val value: OrderPlaced): PlaceOrderEvent()
+    data class OrderPlaced(val value: PricedOrder): PlaceOrderEvent()
 
     /// Event to send to billing context
     /// Will only be created if the AmountToBill is not zero

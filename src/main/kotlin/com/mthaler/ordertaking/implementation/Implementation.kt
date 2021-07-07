@@ -153,7 +153,7 @@ fun toValidatedOrderLine(checkProductCodeExists: CheckProductCodeExists, unvalid
     }
 }
 
-val validateOrder: ValidateOrder = object : ValidateOrder {
+val validateOrder = object : ValidateOrder {
     override suspend fun validateOrder(
         checkProductCodeExists: CheckProductCodeExists,
         checkAddressExists: CheckAddressExists,
@@ -183,7 +183,7 @@ fun toPricedOrderLine(getProductPrice: GetProductPrice, validatedOrderLine: Vali
     return linePrice.map { PricedOrderLine(validatedOrderLine.orderLineId, validatedOrderLine.productCode, validatedOrderLine.quantity, it) }
 }
 
-val priceOrder : PriceOrder = object : PriceOrder {
+val priceOrder = object : PriceOrder {
     override fun priceOrder(
         getProductPrice: GetProductPrice,
         validatedOrder: ValidatedOrder
@@ -200,7 +200,7 @@ val priceOrder : PriceOrder = object : PriceOrder {
 // AcknowledgeOrder step
 // ---------------------------
 
-val acknowledgeOrder: AcknowledgeOrder = object : AcknowledgeOrder {
+val acknowledgeOrder = object : AcknowledgeOrder {
     override fun acknowledgeOrder(
         createOrderAcknowledgmentLetter: CreateOrderAcknowledgmentLetter,
         sendOrderAcknowledgment: SendOrderAcknowledgment,
@@ -219,7 +219,7 @@ val acknowledgeOrder: AcknowledgeOrder = object : AcknowledgeOrder {
 // Create events
 // ---------------------------
 
-fun createOrderPlacedEvent(placedOrder: PricedOrder): OrderPlaced = OrderPlaced(placedOrder)
+fun createOrderPlacedEvent(placedOrder: PricedOrder): PlaceOrderEvent.OrderPlaced = PlaceOrderEvent.OrderPlaced(placedOrder)
 
 fun createBillingEvent(placedOrder: PricedOrder): Option<PlaceOrderEvent.BillableOrderPlaced> {
     val billingAmount = placedOrder.amountToBill.value
@@ -227,5 +227,18 @@ fun createBillingEvent(placedOrder: PricedOrder): Option<PlaceOrderEvent.Billabl
         Some(PlaceOrderEvent.BillableOrderPlaced(placedOrder.orderId, placedOrder.billingAddress, placedOrder.amountToBill))
     } else {
         None
+    }
+}
+
+val createEvents = object : CreateEvents {
+
+    override fun createEvents(
+        pricedOrder: PricedOrder,
+        orderAcknowledgmentSent: Option<OrderAcknowledgmentSent>
+    ): List<PlaceOrderEvent> {
+        val acknowledgmentEvents = orderAcknowledgmentSent.map { PlaceOrderEvent.AcknowledgmentSent(it) }.toList()
+        val orderPlacedEvents = listOf(createOrderPlacedEvent(pricedOrder))
+        val billingEvents = createBillingEvent(pricedOrder).toList()
+        return acknowledgmentEvents + orderPlacedEvents + billingEvents
     }
 }
