@@ -220,3 +220,12 @@ val acknowledgeOrder: AcknowledgeOrder = object : AcknowledgeOrder {
 // ---------------------------
 
 fun createOrderPlacedEvent(placedOrder: PricedOrder): OrderPlaced = OrderPlaced(placedOrder)
+
+fun createBillingEvent(placedOrder: PricedOrder): Option<PlaceOrderEvent.BillableOrderPlaced> {
+    val billingAmount = placedOrder.amountToBill.value
+    return if (billingAmount > 0) {
+        Some(PlaceOrderEvent.BillableOrderPlaced(placedOrder.orderId, placedOrder.billingAddress, placedOrder.amountToBill))
+    } else {
+        None
+    }
+}
