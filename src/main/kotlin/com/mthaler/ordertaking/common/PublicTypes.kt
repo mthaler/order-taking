@@ -1,6 +1,6 @@
 package com.mthaler.ordertaking.common
 
-import arrow.core.Validated
+import arrow.core.ValidatedNel
 import com.mthaler.ordertaking.domain.*
 import java.net.URI
 
@@ -70,5 +70,5 @@ sealed class PlaceOrderError {
 
 fun interface PlaceOrder {
 
-    fun placeOrder(order: UnvalidatedOrder): Validated<PlaceOrderError, List<PlaceOrderEvent>>
+    suspend fun placeOrder(order: UnvalidatedOrder): ValidatedNel<PlaceOrderError, List<PlaceOrderEvent>>
 }

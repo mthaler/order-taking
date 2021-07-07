@@ -242,3 +242,22 @@ val createEvents = object : CreateEvents {
         return acknowledgmentEvents + orderPlacedEvents + billingEvents
     }
 }
+
+// ---------------------------
+// overall workflow
+// ---------------------------
+
+fun placeOrder(checkProductExists: CheckProductCodeExists,
+               checkAddressExists: CheckAddressExists,
+               getProductPrice: GetProductPrice,
+               createOrderAcknowledgmentLetter: CreateOrderAcknowledgmentLetter,
+               sendOrderAcknowledgment: SendOrderAcknowledgment): PlaceOrder = object : PlaceOrder {
+    override suspend fun placeOrder(unvalidatedOrder: UnvalidatedOrder): ValidatedNel<PlaceOrderError, List<PlaceOrderEvent>> {
+        val validateOrder = validateOrder.validateOrder(checkProductExists, checkAddressExists, unvalidatedOrder).mapLeft { errors -> errors.map { e -> PlaceOrderError.Validation(e) } }
+        val pricedOrder = validateOrder.flatMap { priceOrder.priceOrder(getProductPrice, it).mapLeft { errors -> errors.map { e -> PlaceOrderError.Pricing(e) } } }
+        val acknowledgementOption = pricedOrder.map { acknowledgeOrder.acknowledgeOrder(createOrderAcknowledgmentLetter, sendOrderAcknowledgment, it) }
+        return pricedOrder.zip(acknowledgementOption) { p, a ->
+            createEvents.createEvents(p, a)
+        }
+    }
+}
