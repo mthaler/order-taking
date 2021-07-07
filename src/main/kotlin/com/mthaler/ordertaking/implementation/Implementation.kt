@@ -43,6 +43,11 @@ fun interface GetProductPrice {
     fun getProductPrice(productCode: ProductCode): Price
 }
 
+fun interface PriceOrder {
+
+    fun priceOrder(getProductPrice : GetProductPrice, validatedOrder: ValidatedOrder): ValidatedNel<PricingError, PricedOrder>
+}
+
 // ---------------------------
 // Send OrderAcknowledgment
 // ---------------------------
