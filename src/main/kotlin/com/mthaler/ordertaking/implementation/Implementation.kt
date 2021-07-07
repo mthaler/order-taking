@@ -32,7 +32,7 @@ data class ValidatedOrder(val orderId: OrderId, val customerInfo: CustomerInfo, 
 
 fun interface ValidateOrder {
 
-    suspend fun validateOrder(checkProductCodeExists: CheckProductCodeExists, checkAddressExists: CheckAddressExists, unvalidatedOrder: UnvalidatedOrder): ValidatedNel<ValidationError, ValidatedOrder>
+    suspend operator fun invoke(checkProductCodeExists: CheckProductCodeExists, checkAddressExists: CheckAddressExists, unvalidatedOrder: UnvalidatedOrder): ValidatedNel<ValidationError, ValidatedOrder>
 }
 
 // ---------------------------
@@ -154,7 +154,8 @@ fun toValidatedOrderLine(checkProductCodeExists: CheckProductCodeExists, unvalid
 }
 
 val validateOrder = object : ValidateOrder {
-    override suspend fun validateOrder(
+
+    override suspend operator fun invoke(
         checkProductCodeExists: CheckProductCodeExists,
         checkAddressExists: CheckAddressExists,
         unvalidatedOrder: UnvalidatedOrder
@@ -253,7 +254,7 @@ fun placeOrder(checkProductExists: CheckProductCodeExists,
                createOrderAcknowledgmentLetter: CreateOrderAcknowledgmentLetter,
                sendOrderAcknowledgment: SendOrderAcknowledgment): PlaceOrder = object : PlaceOrder {
     override suspend fun placeOrder(unvalidatedOrder: UnvalidatedOrder): ValidatedNel<PlaceOrderError, List<PlaceOrderEvent>> {
-        val validateOrder = validateOrder.validateOrder(checkProductExists, checkAddressExists, unvalidatedOrder).mapLeft { errors -> errors.map { e -> PlaceOrderError.Validation(e) } }
+        val validateOrder = validateOrder(checkProductExists, checkAddressExists, unvalidatedOrder).mapLeft { errors -> errors.map { e -> PlaceOrderError.Validation(e) } }
         val pricedOrder = validateOrder.flatMap { priceOrder.priceOrder(getProductPrice, it).mapLeft { errors -> errors.map { e -> PlaceOrderError.Pricing(e) } } }
         val acknowledgementOption = pricedOrder.map { acknowledgeOrder.acknowledgeOrder(createOrderAcknowledgmentLetter, sendOrderAcknowledgment, it) }
         return pricedOrder.zip(acknowledgementOption) { p, a ->

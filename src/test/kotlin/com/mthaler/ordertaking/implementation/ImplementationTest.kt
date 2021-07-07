@@ -66,7 +66,7 @@ class ImplementationTest: StringSpec({
             UnvalidatedAddress("Wall Street", "", "", "", "New York", "12345"),
             listOf(UnvalidatedOrderLine("test", "W1234", 25))
         )
-        validateOrder.validateOrder({ productCode -> true }, CheckAddressExistsMock(true), order) shouldBe
+        validateOrder({ productCode -> true }, CheckAddressExistsMock(true), order) shouldBe
         Valid(ValidatedOrder(OrderId("test"), CustomerInfo(PersonalName(String50("John"), String50("Doe")), EmailAddress("john.doe@example.com")),
             Address(String50("Wall Street"), None, None, None, String50("New York"), ZipCode("12345")),
             Address(String50("Wall Street"), None, None, None, String50("New York"), ZipCode("12345")),
