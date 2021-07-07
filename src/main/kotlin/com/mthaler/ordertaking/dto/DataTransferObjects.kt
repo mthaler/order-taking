@@ -1,12 +1,12 @@
 package com.mthaler.ordertaking.dto
 
 import arrow.core.ValidatedNel
+import arrow.core.getOrElse
 import arrow.core.zip
+import com.mthaler.ordertaking.common.UnvalidatedAddress
 import com.mthaler.ordertaking.common.UnvalidatedCustomerInfo
-import com.mthaler.ordertaking.domain.CustomerInfo
-import com.mthaler.ordertaking.domain.EmailAddress
-import com.mthaler.ordertaking.domain.PersonalName
-import com.mthaler.ordertaking.domain.String50
+import com.mthaler.ordertaking.domain.*
+import com.mthaler.ordertaking.validation.createInt
 
 data class CustomerInfoDto(val firstName: String, val lastName: String, val emailAddress: String) {
 
@@ -32,5 +32,43 @@ data class CustomerInfoDto(val firstName: String, val lastName: String, val emai
         /// Convert a CustomerInfo object into the corresponding DTO.
         /// Used when exporting from the domain to the outside world.
         fun fromCustomerInfo(domainObj: CustomerInfo): CustomerInfoDto = CustomerInfoDto(domainObj.name.firstName.value, domainObj.name.lastName.value, domainObj.emailAddress.value)
+    }
+}
+
+//===============================================
+// DTO for Address
+//===============================================
+
+data class AddressDto(val addressLine1: String, val addressLine2: String, val addressLine3: String, val addressLine4: String, val city: String, val zipCode : String) {
+
+    /// Convert the DTO into a UnvalidatedAddress
+    /// This always succeeds because there is no validation.
+    /// Used when importing an OrderForm from the outside world into the domain.
+    fun toUnvalidatedAddress(): UnvalidatedAddress = UnvalidatedAddress(addressLine1, addressLine2, addressLine3, addressLine4, city, zipCode)
+
+    /// Convert the DTO into a Address object
+    /// Used when importing from the outside world into the domain, eg loading from a database.
+
+    fun toAddress(): ValidatedNel<String, Address> {
+        val addressLine1 = String50("AddressLine1", addressLine1)
+        val addressLine2 = String50.createOption("AddressLine2", addressLine2)
+        val addressLine3 = String50.createOption("AddressLine3", addressLine3)
+        val addressLine4 = String50.createOption("AddressLine4", addressLine4)
+        val city = String50("City", city)
+        val zipCode = ZipCode("ZipCode", zipCode)
+        return addressLine1.zip(addressLine2, addressLine3, addressLine4, city, zipCode) { a1, a2, a3, a4, c, z ->
+            Address(a1, a2, a3, a4, c, z)
+        }
+    }
+
+    companion object {
+
+        fun fromAddress(domainObj: Address): AddressDto = AddressDto(domainObj.addressLine1.value,
+            domainObj.addressLine2.map { it.value }.getOrElse { "" },
+            domainObj.addressLine3.map { it.value }.getOrElse { "" },
+            domainObj.addressLine4.map { it.value }.getOrElse { "" },
+            domainObj.city.value,
+            domainObj.zipCode.value
+        )
     }
 }
