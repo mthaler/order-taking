@@ -18,7 +18,7 @@ class ImplementationTest: StringSpec({
     }
 
     "toAddress" {
-        toAddress(CheckedAddress(UnvalidatedAddress("Wall Street", "", "", "", "New York", "12345"))) shouldBe
+        CheckedAddress(UnvalidatedAddress("Wall Street", "", "", "", "New York", "12345")).toAddress() shouldBe
                 Valid(Address(String50("Wall Street"), None, None, None, String50("New York"), ZipCode("12345")))
     }
 

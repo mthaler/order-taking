@@ -108,13 +108,13 @@ fun UnvalidatedCustomerInfo.toCustomerInfo(): ValidatedNel<ValidationError, Cust
     }
 }
 
-fun toAddress(unvalidatedAddress: CheckedAddress): ValidatedNel<ValidationError, Address> {
-    val addressLine1 = String50("AddressLine1", unvalidatedAddress.value.addressLine1).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
-    val addressLine2 = String50.createOption("AddressLine2", unvalidatedAddress.value.addressLine2).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
-    val addressLine3 = String50.createOption("AddressLine3", unvalidatedAddress.value.addressLine3).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
-    val addressLine4 = String50.createOption("AddressLine4", unvalidatedAddress.value.addressLine4).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
-    val city = String50("City", unvalidatedAddress.value.city).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
-    val zipCode = ZipCode("ZipCode", unvalidatedAddress.value.zipCode).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
+fun CheckedAddress.toAddress(): ValidatedNel<ValidationError, Address> {
+    val addressLine1 = String50("AddressLine1", this.value.addressLine1).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
+    val addressLine2 = String50.createOption("AddressLine2", this.value.addressLine2).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
+    val addressLine3 = String50.createOption("AddressLine3", this.value.addressLine3).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
+    val addressLine4 = String50.createOption("AddressLine4", this.value.addressLine4).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
+    val city = String50("City", this.value.city).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
+    val zipCode = ZipCode("ZipCode", this.value.zipCode).mapLeft { errors -> errors.map { str -> ValidationError(str) } }
     return addressLine1.zip(addressLine2, addressLine3, addressLine4, city, zipCode) { a1, a2, a3, a4, c, z ->
         Address(a1, a2, a3, a4, c, z)
     }
@@ -162,9 +162,9 @@ val validateOrder = object : ValidateOrder {
         val orderId = toOrderId(unvalidatedOrder.orderId)
         val customerInfo = unvalidatedOrder.customerInfo.toCustomerInfo()
         val checkedShippingAddress = toCheckedAddress(checkAddressExists, unvalidatedOrder.shippingAddress)
-        val shippingAddress = checkedShippingAddress.flatMap { toAddress(it) }
+        val shippingAddress = checkedShippingAddress.flatMap { it.toAddress() }
         val checkedBillingAddress = toCheckedAddress(checkAddressExists, unvalidatedOrder.billingAddress)
-        val billingAddress = checkedBillingAddress.flatMap { toAddress(it) }
+        val billingAddress = checkedBillingAddress.flatMap { it.toAddress() }
         val lines = unvalidatedOrder.lines.map { toValidatedOrderLine(checkProductCodeExists, it) }.combine()
         return orderId.zip(customerInfo, shippingAddress, billingAddress, lines) { o, c, s, b, l ->
             ValidatedOrder(o, c, s, b, l)
