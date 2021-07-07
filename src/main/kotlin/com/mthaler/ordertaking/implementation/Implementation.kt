@@ -19,7 +19,7 @@ data class CheckedAddress(val value: UnvalidatedAddress)
 
 fun interface CheckAddressExists {
 
-    suspend fun checkAddressExists(unvalidatedAddress: UnvalidatedAddress): ValidatedNel<AddressValidationError, CheckedAddress>
+    suspend operator fun invoke(unvalidatedAddress: UnvalidatedAddress): ValidatedNel<AddressValidationError, CheckedAddress>
 }
 
 // ---------------------------
@@ -122,7 +122,7 @@ fun CheckedAddress.toAddress(): ValidatedNel<ValidationError, Address> {
 
 /// Call the checkAddressExists and convert the error to a ValidationError
 suspend fun toCheckedAddress(checkAddress: CheckAddressExists, address: UnvalidatedAddress): ValidatedNel<ValidationError, CheckedAddress> =
-    checkAddress.checkAddressExists(address).mapLeft { errors -> errors.map { err -> when(err) {
+    checkAddress(address).mapLeft { errors -> errors.map { err -> when(err) {
         AddressValidationError.AddressNotFound -> ValidationError("Address not found")
         AddressValidationError.InvalidFormat -> ValidationError("Address has bad format")
     } } }

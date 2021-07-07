@@ -7,7 +7,7 @@ import com.mthaler.ordertaking.common.UnvalidatedAddress
 
 class CheckAddressExistsMock(val exists: Boolean): CheckAddressExists {
 
-    override suspend fun checkAddressExists(unvalidatedAddress: UnvalidatedAddress): ValidatedNel<AddressValidationError, CheckedAddress> = when(exists) {
+    override suspend fun invoke(unvalidatedAddress: UnvalidatedAddress): ValidatedNel<AddressValidationError, CheckedAddress> = when(exists) {
         true -> Valid(CheckedAddress(unvalidatedAddress))
         false -> AddressValidationError.AddressNotFound.invalidNel()
     }
