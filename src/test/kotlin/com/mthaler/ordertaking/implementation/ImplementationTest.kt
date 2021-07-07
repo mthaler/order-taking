@@ -5,8 +5,6 @@ import com.mthaler.ordertaking.common.*
 import com.mthaler.ordertaking.domain.*
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 class ImplementationTest: StringSpec({
 
@@ -68,6 +66,11 @@ class ImplementationTest: StringSpec({
             UnvalidatedAddress("Wall Street", "", "", "", "New York", "12345"),
             listOf(UnvalidatedOrderLine("test", "W1234", 25))
         )
-        println(validateOrder.validateOrder({ productCode -> true }, CheckAddressExistsMock(true), order))
+        validateOrder.validateOrder({ productCode -> true }, CheckAddressExistsMock(true), order) shouldBe
+        Valid(ValidatedOrder(OrderId("test"), CustomerInfo(PersonalName(String50("John"), String50("Doe")), EmailAddress("john.doe@example.com")),
+            Address(String50("Wall Street"), None, None, None, String50("New York"), ZipCode("12345")),
+            Address(String50("Wall Street"), None, None, None, String50("New York"), ZipCode("12345")),
+            listOf(ValidatedOrderLine(OrderLineId("test"), ProductCode.WidgetCode("W1234"), OrderQuantity.UnitQuantity(25)))
+        ))
     }
 })
