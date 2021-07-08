@@ -3,9 +3,7 @@ package com.mthaler.ordertaking.dto
 import arrow.core.None
 import arrow.core.Valid
 import arrow.core.invalidNel
-import com.mthaler.ordertaking.common.PlaceOrderEvent
-import com.mthaler.ordertaking.common.PricedOrder
-import com.mthaler.ordertaking.common.PricedOrderLine
+import com.mthaler.ordertaking.common.*
 import com.mthaler.ordertaking.domain.*
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
@@ -44,5 +42,11 @@ class DataTransferObjectsTest: StringSpec({
         dto shouldBe PlaceOrderEventDto(mapOf("OrderPlaced" to OrderPlacedDto("test", CustomerInfoDto("John", "Doe", "john.doe@example.com"), AddressDto("Wall Street", "", "", "", "New York", "12345"),
             AddressDto("Wall Street", "", "", "", "New York", "12345"), 1000.0,
             listOf(PricedOrderLineDto("test", "W1234", 25, 40.0)))))
+    }
+
+    "PlaceOrderErrorDto.fromDomain" {
+        val err = PlaceOrderError.Validation(ValidationError("invalid"))
+        val dto = PlaceOrderErrorDto.fromDomain(err)
+        dto shouldBe PlaceOrderErrorDto("ValidationError", "invalid")
     }
 })
