@@ -9,6 +9,7 @@ import com.mthaler.ordertaking.domain.Price
 import com.mthaler.ordertaking.dto.PlaceOrderErrorDto
 import com.mthaler.ordertaking.implementation.*
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.mthaler.ordertaking.dto.OrderFormDto
 import com.mthaler.ordertaking.dto.PlaceOrderEventDto
 
 // ======================================================
@@ -75,4 +76,16 @@ fun workflowResultToHttpReponse(result: ValidatedNel<PlaceOrderError, List<Place
             return HttpResponse(401, JsonString(json))
         }
     }
+}
+
+val placeOrderApi: PlaceOrderApi = PlaceOrderApi { request ->
+
+    // following the approach in "A Complete Serialization Pipeline" in chapter 11
+
+    // start with a string
+    val orderFormJson = request.body.value
+    val orderForm = jacksonObjectMapper().readValue(orderFormJson, OrderFormDto::class.java)
+    // convert to domain object
+    val unvalidatedOrder = orderForm.toUnvalidatedOrder()
+    TODO()
 }
