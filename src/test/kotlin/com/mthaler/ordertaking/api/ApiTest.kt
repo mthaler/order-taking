@@ -32,4 +32,13 @@ class ApiTest: StringSpec({
         jacksonObjectMapper().writeValueAsString(dto) shouldBe
                 """{"orderId":"test","customerInfo":{"firstName":"John","lastName":"Doe","emailAddress":"john.doe@example.com"},"shippingAddress":{"addressLine1":"Wall Street","addressLine2":"","addressLine3":"","addressLine4":"","city":"New York","zipCode":"12345"},"billingAddress":{"addressLine1":"Wall Street","addressLine2":"","addressLine3":"","addressLine4":"","city":"New York","zipCode":"12345"},"lines":[{"orderLineId":"test","productCode":"W1234","quantity":25}]}"""
     }
+
+    "placeOrderApi" {
+        val json = """{"orderId":"test","customerInfo":{"firstName":"John","lastName":"Doe","emailAddress":"john.doe@example.com"},"shippingAddress":{"addressLine1":"Wall Street","addressLine2":"","addressLine3":"","addressLine4":"","city":"New York","zipCode":"12345"},"billingAddress":{"addressLine1":"Wall Street","addressLine2":"","addressLine3":"","addressLine4":"","city":"New York","zipCode":"12345"},"lines":[{"orderLineId":"test","productCode":"W1234","quantity":25}]}"""
+        val request = HttpRequest("GET", "test", JsonString(json))
+        val response = placeOrderApi(request)
+        response.httpStatusCode shouldBe 200
+        response.body.value shouldBe
+                """[{"value":{"OrderAcknowledgmentSent":{"orderId":"test","emailAddress":"john.doe@example.com"}}},{"value":{"OrderPlaced":{"orderId":"test","customerInfo":{"firstName":"John","lastName":"Doe","emailAddress":"john.doe@example.com"},"shippingAddress":{"addressLine1":"Wall Street","addressLine2":"","addressLine3":"","addressLine4":"","city":"New York","zipCode":"12345"},"billingAddress":{"addressLine1":"Wall Street","addressLine2":"","addressLine3":"","addressLine4":"","city":"New York","zipCode":"12345"},"amountToBill":1000.0,"lines":[{"orderLineId":"test","quantity":25,"linePrice":1000.0,"productCode":"W1234"}]}}},{"value":{"BillableOrderPlaced":{"billingAddress":{"addressLine1":"Wall Street","addressLine2":"","addressLine3":"","addressLine4":"","city":"New York","zipCode":"12345"},"amountToBill":1000.0,"orderId":"test"}}}]"""
+    }
 })

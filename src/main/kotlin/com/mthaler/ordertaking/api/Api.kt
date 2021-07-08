@@ -47,7 +47,7 @@ val checkProductExists: CheckProductCodeExists = CheckProductCodeExists { unvali
 val checkAddressExists: CheckAddressExists = CheckAddressExists { unvalidatedAddress -> Valid(CheckedAddress(unvalidatedAddress)) }
 
 // dummy implementation
-val getProductPrice: GetProductPrice = GetProductPrice { productCode -> Price.unsafeCreate(1000.0) }
+val getProductPrice: GetProductPrice = GetProductPrice { productCode -> Price.unsafeCreate(40.0) }
 
 val createOrderAcknowledgmentLetter: CreateOrderAcknowledgmentLetter = CreateOrderAcknowledgmentLetter { pricedOrder -> HtmlString("some text") }
 
