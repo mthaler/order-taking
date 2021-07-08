@@ -200,3 +200,19 @@ data class PlaceOrderEventDto(val value: Map<String, Any>) {
         }
     }
 }
+
+//===============================================
+// DTO for PlaceOrderError
+//===============================================
+
+data class PlaceOrderErrorDto(val code: String, val message: String) {
+
+    companion object {
+
+        fun fromDomain (domainObj: PlaceOrderError ): PlaceOrderErrorDto = when(domainObj) {
+            is PlaceOrderError.Validation -> PlaceOrderErrorDto("ValidationError", domainObj.value.value)
+            is PlaceOrderError.Pricing -> PlaceOrderErrorDto("PricingError", domainObj.value.value)
+            is PlaceOrderError.RemoteService -> PlaceOrderErrorDto("RemoteServiceError", "${domainObj.value.service.name}: ${domainObj.value.exception.message}")
+        }
+    }
+}
