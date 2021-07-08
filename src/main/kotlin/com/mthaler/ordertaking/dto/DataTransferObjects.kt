@@ -150,3 +150,18 @@ data class BillableOrderPlacedDto(val OrderId: String, val billingAddress: Addre
             )
     }
 }
+
+//===============================================
+// DTO for OrderAcknowledgmentSent event
+//===============================================
+
+/// Event to send to other bounded contexts
+data class OrderAcknowledgmentSentDto(val orderId: String, val emailAddress: String) {
+
+    companion object {
+
+        /// Convert a OrderAcknowledgmentSent object into the corresponding DTO.
+        /// Used when exporting from the domain to the outside world.
+        fun fromDomain (domainObj: OrderAcknowledgmentSent): OrderAcknowledgmentSentDto = OrderAcknowledgmentSentDto(domainObj.orderId.value, domainObj.emailAddress.value)
+    }
+}
