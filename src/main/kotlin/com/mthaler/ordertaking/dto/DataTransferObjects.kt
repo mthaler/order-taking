@@ -5,6 +5,7 @@ import arrow.core.getOrElse
 import arrow.core.zip
 import com.mthaler.ordertaking.common.UnvalidatedAddress
 import com.mthaler.ordertaking.common.UnvalidatedCustomerInfo
+import com.mthaler.ordertaking.common.UnvalidatedOrderLine
 import com.mthaler.ordertaking.domain.*
 import com.mthaler.ordertaking.validation.createInt
 
@@ -73,3 +74,19 @@ data class AddressDto(val addressLine1: String, val addressLine2: String, val ad
         )
     }
 }
+
+//===============================================
+// DTOs for OrderLines
+//===============================================
+
+data class OrderFormLineDto(val orderLineId: String, val productCode: String, val quantity : Number) {
+
+    /// Convert the OrderFormLine into a UnvalidatedOrderLine
+    /// This always succeeds because there is no validation.
+    /// Used when importing an OrderForm from the outside world into the domain.
+    fun toUnvalidatedOrderLine(): UnvalidatedOrderLine = UnvalidatedOrderLine(this.orderLineId, this.productCode, this.quantity)
+}
+
+//===============================================
+// DTOs for PricedOrderLines
+//===============================================
