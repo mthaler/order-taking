@@ -87,5 +87,12 @@ val placeOrderApi: PlaceOrderApi = PlaceOrderApi { request ->
     val orderForm = jacksonObjectMapper().readValue(orderFormJson, OrderFormDto::class.java)
     // convert to domain object
     val unvalidatedOrder = orderForm.toUnvalidatedOrder()
-    TODO()
+
+    // setup the dependencies. See "Injecting Dependencies" in chapter 9
+    val workflow = placeOrder(checkProductExists, checkAddressExists, getProductPrice, createOrderAcknowledgmentLetter, sendOrderAcknowledgment)
+
+    // now we are in the pure domain
+    val result = workflow.placeOrder(unvalidatedOrder)
+
+    workflowResultToHttpReponse(result)
 }
