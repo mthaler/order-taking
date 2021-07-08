@@ -110,3 +110,26 @@ data class OrderFormDto(val orderId: String, val customerInfo: CustomerInfoDto, 
     /// This always succeeds because there is no validation.
     fun toUnvalidatedOrder(): UnvalidatedOrder = UnvalidatedOrder(orderId, customerInfo.toUnvalidatedCustomerInfo(), shippingAddress.toUnvalidatedAddress(), billingAddress.toUnvalidatedAddress(), lines.map { it.toUnvalidatedOrderLine() })
 }
+
+//===============================================
+// DTO for OrderPlaced event
+//===============================================
+
+/// Event to send to shipping context
+data class OrderPlacedDto(val orderId: String, val customerInfo: CustomerInfoDto, val shippingAddress: AddressDto, val billingAddress: AddressDto, val amountToBill: Double, val lines : List<PricedOrderLineDto>) {
+
+    companion object {
+
+        /// Convert a OrderPlaced object into the corresponding DTO.
+        /// Used when exporting from the domain to the outside world.
+        fun fromDomain(domainObj: PlaceOrderEvent.OrderPlaced): OrderPlacedDto =
+            OrderPlacedDto(
+                domainObj.value.orderId.value,
+                CustomerInfoDto.fromCustomerInfo(domainObj.value.customerInfo),
+                AddressDto.fromAddress(domainObj.value.shippingAddress),
+                AddressDto.fromAddress(domainObj.value.billingAddress),
+                domainObj.value.amountToBill.value,
+                domainObj.value.lines.map { PricedOrderLineDto.fromDomain(it) }
+            )
+    }
+}
