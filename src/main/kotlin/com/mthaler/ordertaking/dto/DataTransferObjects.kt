@@ -165,3 +165,38 @@ data class OrderAcknowledgmentSentDto(val orderId: String, val emailAddress: Str
         fun fromDomain (domainObj: OrderAcknowledgmentSent): OrderAcknowledgmentSentDto = OrderAcknowledgmentSentDto(domainObj.orderId.value, domainObj.emailAddress.value)
     }
 }
+
+//===============================================
+// DTO for PlaceOrderEvent
+//===============================================
+
+/// Use a dictionary representation of a PlaceOrderEvent, suitable for JSON
+/// See "Serializing Records and Choice Types Using Maps" in chapter 11
+
+data class PlaceOrderEventDto(val value: Map<String, Any>) {
+
+    companion object {
+
+        /// Convert a PlaceOrderEvent into the corresponding DTO.
+        /// Used when exporting from the domain to the outside world.
+        fun fromDomain (domainObj: PlaceOrderEvent): PlaceOrderEventDto {
+            when(domainObj) {
+                is PlaceOrderEvent.OrderPlaced -> {
+                    val obj = OrderPlacedDto.fromDomain(domainObj)
+                    val key = "OrderPlaced"
+                    return PlaceOrderEventDto(mapOf(key to obj))
+                }
+                is PlaceOrderEvent.BillableOrderPlaced -> {
+                    val obj = BillableOrderPlacedDto.fromDomain(domainObj)
+                    val key = "BillableOrderPlaced"
+                    return PlaceOrderEventDto(mapOf(key to obj))
+                }
+                is PlaceOrderEvent.AcknowledgmentSent -> {
+                    val obj = OrderAcknowledgmentSentDto.fromDomain(domainObj.value)
+                    val key = "OrderAcknowledgmentSent"
+                    return PlaceOrderEventDto(mapOf(key to obj))
+                }
+            }
+        }
+    }
+}
