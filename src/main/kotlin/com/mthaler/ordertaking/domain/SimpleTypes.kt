@@ -77,6 +77,11 @@ sealed class ProductCode {
         }
     }
 
+    fun value(): String = when(this) {
+        is WidgetCode -> value
+        is GizmoCode -> value
+    }
+
     companion object {
 
         operator fun invoke(fieldName: String, code: String): ValidatedNel<String, ProductCode> = when {

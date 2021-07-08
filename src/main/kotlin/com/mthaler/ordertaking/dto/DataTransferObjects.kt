@@ -2,7 +2,9 @@ package com.mthaler.ordertaking.dto
 
 import arrow.core.ValidatedNel
 import arrow.core.getOrElse
+import arrow.core.valid
 import arrow.core.zip
+import com.mthaler.ordertaking.common.PricedOrderLine
 import com.mthaler.ordertaking.common.UnvalidatedAddress
 import com.mthaler.ordertaking.common.UnvalidatedCustomerInfo
 import com.mthaler.ordertaking.common.UnvalidatedOrderLine
@@ -90,3 +92,13 @@ data class OrderFormLineDto(val orderLineId: String, val productCode: String, va
 //===============================================
 // DTOs for PricedOrderLines
 //===============================================
+
+data class PricedOrderLineDto(val orderLineId: String, val ProductCode: String, val quantity: Number, val linePrice: Double) {
+
+
+    companion object {
+        /// Convert a PricedOrderLine object into the corresponding DTO.
+        /// Used when exporting from the domain to the outside world.
+        fun fromDomain(domainObj: PricedOrderLine): PricedOrderLineDto = PricedOrderLineDto(domainObj.orderLineId.value, domainObj.productCode.value(), domainObj.quantity.value(), domainObj.linePrice.value)
+    }
+}
