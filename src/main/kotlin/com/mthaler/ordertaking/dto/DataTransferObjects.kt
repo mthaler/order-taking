@@ -4,10 +4,7 @@ import arrow.core.ValidatedNel
 import arrow.core.getOrElse
 import arrow.core.valid
 import arrow.core.zip
-import com.mthaler.ordertaking.common.PricedOrderLine
-import com.mthaler.ordertaking.common.UnvalidatedAddress
-import com.mthaler.ordertaking.common.UnvalidatedCustomerInfo
-import com.mthaler.ordertaking.common.UnvalidatedOrderLine
+import com.mthaler.ordertaking.common.*
 import com.mthaler.ordertaking.domain.*
 import com.mthaler.ordertaking.validation.createInt
 
@@ -101,4 +98,15 @@ data class PricedOrderLineDto(val orderLineId: String, val ProductCode: String, 
         /// Used when exporting from the domain to the outside world.
         fun fromDomain(domainObj: PricedOrderLine): PricedOrderLineDto = PricedOrderLineDto(domainObj.orderLineId.value, domainObj.productCode.value(), domainObj.quantity.value(), domainObj.linePrice.value)
     }
+}
+
+//===============================================
+// DTO for OrderForm
+//===============================================
+
+data class OrderFormDto(val orderId: String, val customerInfo: CustomerInfoDto, val shippingAddress: AddressDto, val billingAddress: AddressDto, val lines : List<OrderFormLineDto>) {
+
+    /// Convert the OrderForm into a UnvalidatedOrder
+    /// This always succeeds because there is no validation.
+    fun toUnvalidatedOrder(): UnvalidatedOrder = UnvalidatedOrder(orderId, customerInfo.toUnvalidatedCustomerInfo(), shippingAddress.toUnvalidatedAddress(), billingAddress.toUnvalidatedAddress(), lines.map { it.toUnvalidatedOrderLine() })
 }
