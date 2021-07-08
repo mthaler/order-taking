@@ -1,5 +1,10 @@
 package com.mthaler.ordertaking.api
 
+import arrow.core.Valid
+import com.mthaler.ordertaking.implementation.CheckAddressExists
+import com.mthaler.ordertaking.implementation.CheckProductCodeExists
+import com.mthaler.ordertaking.implementation.CheckedAddress
+
 // ======================================================
 // This file contains the JSON API interface to the PlaceOrder workflow
 //
@@ -21,3 +26,15 @@ fun interface PlaceOrderApi {
 
     suspend operator fun invoke(request: HttpRequest): HttpResponse
 }
+
+// =============================
+// Implementation
+// =============================
+
+// setup dummy dependencies
+
+// dummy implementation
+val checkProductExists: CheckProductCodeExists = CheckProductCodeExists { unvalidatedAddress -> true }
+
+// dummy implementation
+val checkAddressExists: CheckAddressExists = CheckAddressExists { unvalidatedAddress -> Valid(CheckedAddress(unvalidatedAddress)) }
