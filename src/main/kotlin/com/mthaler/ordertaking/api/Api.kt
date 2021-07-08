@@ -1,8 +1,14 @@
 package com.mthaler.ordertaking.api
 
+import arrow.core.Invalid
 import arrow.core.Valid
+import arrow.core.ValidatedNel
+import com.mthaler.ordertaking.common.PlaceOrderError
+import com.mthaler.ordertaking.common.PlaceOrderEvent
 import com.mthaler.ordertaking.domain.Price
+import com.mthaler.ordertaking.dto.PlaceOrderErrorDto
 import com.mthaler.ordertaking.implementation.*
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 
 // ======================================================
 // This file contains the JSON API interface to the PlaceOrder workflow
@@ -48,3 +54,20 @@ val sendOrderAcknowledgment: SendOrderAcknowledgment = SendOrderAcknowledgment {
 // -------------------------------
 // workflow
 // -------------------------------
+
+/// This function converts the workflow output into a HttpResponse
+
+fun workflowResultToHttpReponse(result: ValidatedNel<PlaceOrderError, List<PlaceOrderEvent>>): HttpResponse {
+    when(result) {
+        is Valid -> {
+            TODO()
+        }
+        is Invalid -> {
+            // turn domain errors into a dto
+            val dtos = result.value.map { PlaceOrderErrorDto.fromDomain(it) }.toTypedArray()
+            // and serialize to JSON
+            val json = jacksonObjectMapper().writeValueAsString(dtos)
+            return HttpResponse(401, JsonString(json))
+        }
+    }
+}
