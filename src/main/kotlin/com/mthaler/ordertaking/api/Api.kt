@@ -9,6 +9,7 @@ import com.mthaler.ordertaking.domain.Price
 import com.mthaler.ordertaking.dto.PlaceOrderErrorDto
 import com.mthaler.ordertaking.implementation.*
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.mthaler.ordertaking.dto.PlaceOrderEventDto
 
 // ======================================================
 // This file contains the JSON API interface to the PlaceOrder workflow
@@ -60,7 +61,11 @@ val sendOrderAcknowledgment: SendOrderAcknowledgment = SendOrderAcknowledgment {
 fun workflowResultToHttpReponse(result: ValidatedNel<PlaceOrderError, List<PlaceOrderEvent>>): HttpResponse {
     when(result) {
         is Valid -> {
-            TODO()
+            // turn domain events into dtos
+            val dtos = result.value.map { PlaceOrderEventDto.fromDomain(it) }.toTypedArray()
+            // and serialize to JSON
+            val json = jacksonObjectMapper().writeValueAsString(dtos)
+            return HttpResponse(200, JsonString(json))
         }
         is Invalid -> {
             // turn domain errors into a dto
