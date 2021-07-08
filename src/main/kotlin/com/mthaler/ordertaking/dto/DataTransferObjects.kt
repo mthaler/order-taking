@@ -133,3 +133,20 @@ data class OrderPlacedDto(val orderId: String, val customerInfo: CustomerInfoDto
             )
     }
 }
+
+//===============================================
+// DTO for BillableOrderPlaced event
+//===============================================
+
+/// Event to send to billing context
+data class BillableOrderPlacedDto(val OrderId: String, val billingAddress: AddressDto, val amountToBill: Double) {
+
+    companion object {
+        fun fromDomain (domainObj: PlaceOrderEvent.BillableOrderPlaced): BillableOrderPlacedDto =
+            BillableOrderPlacedDto(
+                domainObj.orderId.value,
+                AddressDto.fromAddress(domainObj.billingAddress),
+                domainObj.amountToBill.value
+            )
+    }
+}
