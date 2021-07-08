@@ -59,7 +59,7 @@ val sendOrderAcknowledgment: SendOrderAcknowledgment = SendOrderAcknowledgment {
 
 /// This function converts the workflow output into a HttpResponse
 
-fun workflowResultToHttpReponse(result: ValidatedNel<PlaceOrderError, List<PlaceOrderEvent>>): HttpResponse {
+fun workflowResultToHttpResponse(result: ValidatedNel<PlaceOrderError, List<PlaceOrderEvent>>): HttpResponse {
     when(result) {
         is Valid -> {
             // turn domain events into dtos
@@ -94,5 +94,5 @@ val placeOrderApi: PlaceOrderApi = PlaceOrderApi { request ->
     // now we are in the pure domain
     val result = workflow.placeOrder(unvalidatedOrder)
 
-    workflowResultToHttpReponse(result)
+    workflowResultToHttpResponse(result)
 }
